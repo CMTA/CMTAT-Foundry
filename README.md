@@ -80,10 +80,10 @@ Default RPC URL with Anvil :
 The different libraries can be installed with `npm install`.  
 The libraries can be managed in the file [package.json](./package.json) 
 
-**Prettier**
-`npx prettier --write 'test/**/*.sol'`
+**Prettier**  
+`npx prettier --write 'test/**/*.sol'`  
 [website - reference](https://github.com/prettier-solidity/prettier-plugin-solidity)
 
-**Ethlint/ Solium**
-`npx solium -d test`
+**Ethlint/ Solium**  
+`npx solium -d test`  
 [website - reference](https://github.com/duaraghav8/Ethlint)
