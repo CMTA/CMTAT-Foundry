@@ -10,14 +10,14 @@ The CMTAT contracts are included as a [submodule](CMTAT/) of the present reposit
 You can follow the instruction of the official foundry book here : [website](https://book.getfoundry.sh/getting-started/installation)
 
 ## Submodule
-You can install the submodules with the following command :
+You can install the submodules with the following command :  
 ```
 forge install
 ```
 The official documentation is available here : [website - install](https://book.getfoundry.sh/reference/forge/forge-install) 
 
-You can update all the submodules with the following command :
-`forge update`
+You can update all the submodules with the following command :  
+`forge update`  
 The official documentation is available here : [website - update](https://book.getfoundry.sh/reference/forge/forge-update) 
 
 
@@ -33,30 +33,30 @@ The official documentation is available here :
 * [website - test-commands](https://book.getfoundry.sh/reference/forge/test-commands) 
 
 
-* Run test
+* Run test  
 `forge test`
 
-* Run specific test (contract)
+* Run specific test (contract)  
 `forge test --match-contract <contract name> --match-test <function name>`
 
-* Exclude some tests
-Same principle but with theses flags
+* Exclude some tests  
+Same principle but with theses flags  
 `--no-match-contract
 --no-match-test`
 
-* match a glob pattern
-You can run tests in filenames that match a glob pattern with --match-path
+* match a glob pattern  
+You can run tests in filenames that match a glob pattern with --match-path  
 `forge test --match-path test/ContractB.t.sol`
 
-* Watch mode 
-Only test files changed
+* Watch mode  
+Only test files changed  
 `forge test --watch`
 
-* Re-run all tests
+* Re-run all tests  
 `forge test --watch --run-all`
 
-* Verbosity 
-You can configure the verbosity with these flags :
+* Verbosity   
+You can configure the verbosity with these flags :  
 `-vv /-vvv / -vvvv / -vvvvv`
 
 
@@ -64,17 +64,17 @@ You can configure the verbosity with these flags :
 The official documentation is available here : [website](https://book.getfoundry.sh/reference/forge/deploy-commands) 
 
 ### Local
-With anvil, you can create a local testnet node for deploying and testing smart contracts.
-The official documentation by Foundry is available here : [website - reference](https://book.getfoundry.sh/reference/anvil/)
-For the private key, you can use the private key offered by Anvil.
-Warning : use these privates keys only for a local development !!!!
-On Linux system :
+With anvil, you can create a local testnet node for deploying and testing smart contracts.  
+The official documentation by Foundry is available here : [website - reference](https://book.getfoundry.sh/reference/anvil/)  
+For the private key, you can use the private key offered by Anvil.  
+Warning : use these privates keys only for a local development !!!!    
+<br/>On Linux system :  
 `
-export RPC_URL=<RPC URL>
-Default RPC URL with Anvil :
-export RPC_URL=http://127.0.0.1:8545
-export PRIVATE_KEY=<Local Private Key>
-forge create CMTAT --rpc-url=$RPC_URL --private-key=$PRIVATE_KEY`
+export RPC_URL=<RPC URL>`    
+Default RPC URL with Anvil :  
+`export RPC_URL=http://127.0.0.1:8545`  
+`export PRIVATE_KEY=<Local Private Key>`  
+`forge create CMTAT --rpc-url=$RPC_URL --private-key=$PRIVATE_KEY`
 
 ## Code Style
 The different libraries can be installed with `npm install`.  
