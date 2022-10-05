@@ -77,7 +77,7 @@ export PRIVATE_KEY=<Local Private Key>
 forge create CMTAT --rpc-url=$RPC_URL --private-key=$PRIVATE_KEY`
 
 ## Code Style
-The different libraries can be installed with `npm install`.
+The different libraries can be installed with `npm install`.  
 The libraries can be managed in the file [package.json](./package.json) 
 
 **Prettier**
