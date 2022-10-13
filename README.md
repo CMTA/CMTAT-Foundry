@@ -54,28 +54,10 @@ To run a specific test, use
 forge test --match-contract <contract name> --match-test <function name>
 ```
 
-
-The official documentation is available here : 
-
-* [website - test](https://book.getfoundry.sh/forge/tests) 
-* [website - test-commands](https://book.getfoundry.sh/reference/forge/test-commands) 
+See also the test framework's [official documentation](https://book.getfoundry.sh/forge/tests), and that of the [test commands](https://book.getfoundry.sh/reference/forge/test-commands).
 
 
-
-* Watch mode  
-Only test files changed  
-`forge test --watch`
-
-* Re-run all tests  
-`forge test --watch --run-all`
-
-
-
-## Deployment
-
-The official documentation is available here : [website](https://book.getfoundry.sh/reference/forge/deploy-commands) 
-
-### Local
+## Local deployment
 
 With Foundry, you [can create a local testnet](https://book.getfoundry.sh/reference/anvil/) node for deploying and testing smart contracts, based on the [Anvil](https://anvil.works/) framework. 
 
@@ -87,9 +69,8 @@ export PRIVATE_KEY=<Local Private Key>
 forge create CMTAT --rpc-url=$RPC_URL --private-key=$PRIVATE_KEY
 ```
 
-### Mainnet
+See also the command's [documentation](https://book.getfoundry.sh/reference/forge/deploy-command).
 
-TODO
 
 ## Code style guidelines
 
