@@ -2,9 +2,9 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "../src/modules/PauseModule.sol";
+import "CMTAT/modules/PauseModule.sol";
 import "./HelperContract.sol";
-import "../src/mocks/RuleEngineMock.sol";
+import "CMTAT/mocks/RuleEngineMock.sol";
 
 contract RuleEngineTest is Test, HelperContract, ValidationModule {
     RuleEngineMock fakeRuleEngine = new RuleEngineMock();

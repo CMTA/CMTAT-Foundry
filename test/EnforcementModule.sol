@@ -2,9 +2,9 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "../src/modules/EnforcementModule.sol";
-import "../src/modules/PauseModule.sol";
-import "../src/modules/AuthorizationModule.sol";
+import "CMTAT/modules/EnforcementModule.sol";
+import "CMTAT/modules/PauseModule.sol";
+import "CMTAT/modules/AuthorizationModule.sol";
 import "./HelperContract.sol";
 
 contract EnforcementAuthorizationModule is

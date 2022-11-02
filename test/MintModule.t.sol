@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "../src/modules/PauseModule.sol";
+import "CMTAT/modules/PauseModule.sol";
 import "./HelperContract.sol";
 
 contract MintModuleTest is Test, HelperContract, MintModule, ERC20Upgradeable {
