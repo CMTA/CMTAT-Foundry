@@ -8,10 +8,9 @@ import "./HelperContract.sol";
 contract BaseModuleTest is Test, HelperContract, BaseModule {
     function setUp() public {
         vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT();
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
         CMTAT_CONTRACT.initialize(
             OWNER,
-            ZERO_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
@@ -146,10 +145,9 @@ contract BaseModuleTest is Test, HelperContract, BaseModule {
 contract AllowanceTest is Test, HelperContract, BaseModule {
     function setUp() public {
         vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT();
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
         CMTAT_CONTRACT.initialize(
             OWNER,
-            ZERO_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
@@ -281,10 +279,9 @@ contract AllowanceTest is Test, HelperContract, BaseModule {
 contract TransferTest is Test, HelperContract, BaseModule {
     function setUp() public {
         vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT();
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
         CMTAT_CONTRACT.initialize(
             OWNER,
-            ZERO_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",

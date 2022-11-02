@@ -18,10 +18,9 @@ contract EnforcementAuthorizationModule is
 
     function setUp() public {
         vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT();
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
         CMTAT_CONTRACT.initialize(
             OWNER,
-            ZERO_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
