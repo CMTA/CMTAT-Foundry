@@ -2,16 +2,15 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "../src/modules/PauseModule.sol";
+import "CMTAT/modules/PauseModule.sol";
 import "./HelperContract.sol";
 
 contract MintModuleTest is Test, HelperContract, MintModule, ERC20Upgradeable {
     function setUp() public {
         vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT();
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
         CMTAT_CONTRACT.initialize(
             OWNER,
-            ZERO_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",

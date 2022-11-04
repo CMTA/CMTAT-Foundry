@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "../src/CMTAT.sol";
+import "CMTAT/CMTAT.sol";
 
 abstract contract HelperContract {
     CMTAT CMTAT_CONTRACT;

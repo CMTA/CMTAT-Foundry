@@ -2,9 +2,9 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "../src/modules/PauseModule.sol";
+import "CMTAT/modules/PauseModule.sol";
 import "./HelperContract.sol";
-import "../src/mocks/RuleEngineMock.sol";
+import "CMTAT/mocks/RuleEngineMock.sol";
 
 contract RuleEngineTest is Test, HelperContract, ValidationModule {
     RuleEngineMock fakeRuleEngine = new RuleEngineMock();
@@ -12,10 +12,9 @@ contract RuleEngineTest is Test, HelperContract, ValidationModule {
 
     function setUp() public {
         vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT();
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
         CMTAT_CONTRACT.initialize(
             OWNER,
-            ZERO_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
@@ -54,10 +53,9 @@ contract RuleEngineSetTest is Test, HelperContract, ValidationModule {
 
     function setUp() public {
         vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT();
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
         CMTAT_CONTRACT.initialize(
             OWNER,
-            ZERO_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
