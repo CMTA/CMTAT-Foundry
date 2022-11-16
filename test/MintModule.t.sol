@@ -43,13 +43,16 @@ contract MintModuleTest is Test, HelperContract, MintModule, ERC20Upgradeable {
         uint256 res3 = CMTAT_CONTRACT.totalSupply();
         assertEq(res3, 20);
 
-        // Act
+       
         // Issue 50 and check intermediate balances and total supply
-        vm.prank(ADMIN_ADDRESS);
+        // Assert
         vm.expectEmit(true, true, false, true);
         emit Transfer(ZERO_ADDRESS, ADDRESS2, 50);
         vm.expectEmit(true, false, false, true);
         emit Mint(ADDRESS2, 50);
+        
+        // Act
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.mint(ADDRESS2, 50);
 
         // Assert
@@ -69,12 +72,14 @@ contract MintModuleTest is Test, HelperContract, MintModule, ERC20Upgradeable {
         uint256 res1 = CMTAT_CONTRACT.balanceOf(ADMIN_ADDRESS);
         assertEq(res1, 0);
 
-        // Act
         // Issue 20
-        vm.prank(ADDRESS1);
+        // Assert
         vm.expectEmit(true, true, false, true);
         emit Transfer(ZERO_ADDRESS, ADDRESS1, 20);
         emit Mint(ADDRESS1, 20);
+
+        // Act
+        vm.prank(ADDRESS1);
         CMTAT_CONTRACT.mint(ADDRESS1, 20);
 
         // Assert
@@ -88,8 +93,7 @@ contract MintModuleTest is Test, HelperContract, MintModule, ERC20Upgradeable {
 
     // reverts when issuing by a non minter
     function testCannotIssuingByNonMinter() public {
-        // Act
-        vm.prank(ADDRESS1);
+        // Assert
         string memory message = string(
             abi.encodePacked(
                 "AccessControl: account ",
@@ -99,6 +103,8 @@ contract MintModuleTest is Test, HelperContract, MintModule, ERC20Upgradeable {
             )
         );
         vm.expectRevert(bytes(message));
+        // Act
+        vm.prank(ADDRESS1);
         CMTAT_CONTRACT.mint(ADDRESS1, 20);
     }
 }
