@@ -8,6 +8,7 @@ abstract contract HelperContract {
     CMTAT CMTAT_CONTRACT;
     address constant ZERO_ADDRESS = address(0);
     address constant OWNER = address(1);
+    address constant ADMIN_ADDRESS = address(5);
     address constant ADDRESS1 = address(2);
     address constant ADDRESS2 = address(3);
     address constant ADDRESS3 = address(4);

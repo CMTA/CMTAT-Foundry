@@ -7,10 +7,10 @@ import "./HelperContract.sol";
 
 contract MintModuleTest is Test, HelperContract, MintModule, ERC20Upgradeable {
     function setUp() public {
-        vm.prank(OWNER);
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
         CMTAT_CONTRACT.initialize(
-            OWNER,
+            ADMIN_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
@@ -18,36 +18,41 @@ contract MintModuleTest is Test, HelperContract, MintModule, ERC20Upgradeable {
         );
     }
 
-    //can be minted as the owner
-    function testCanBeMintedByOwner() public {
+    /**
+    The admin is assigned the MINTER role when the contract is deployed
+     */
+    function testCanBeMintedByAdmin() public {
+        // Arrange - Assert
         // Check first balance
-        uint256 res1 = CMTAT_CONTRACT.balanceOf(OWNER);
+        uint256 res1 = CMTAT_CONTRACT.balanceOf(ADMIN_ADDRESS);
         assertEq(res1, 0);
 
+        // Act
         // Issue 20 and check balances and total supply
-        //log1
-        vm.prank(OWNER);
+        vm.prank(ADMIN_ADDRESS);
         vm.expectEmit(true, true, false, true);
         emit Transfer(ZERO_ADDRESS, ADDRESS1, 20);
         vm.expectEmit(true, false, false, true);
         emit Mint(ADDRESS1, 20);
         CMTAT_CONTRACT.mint(ADDRESS1, 20);
 
+        // Assert
         uint256 res2 = CMTAT_CONTRACT.balanceOf(ADDRESS1);
         assertEq(res2, 20);
 
         uint256 res3 = CMTAT_CONTRACT.totalSupply();
         assertEq(res3, 20);
 
+        // Act
         // Issue 50 and check intermediate balances and total supply
-        //log2
-        vm.prank(OWNER);
+        vm.prank(ADMIN_ADDRESS);
         vm.expectEmit(true, true, false, true);
         emit Transfer(ZERO_ADDRESS, ADDRESS2, 50);
         vm.expectEmit(true, false, false, true);
         emit Mint(ADDRESS2, 50);
-
         CMTAT_CONTRACT.mint(ADDRESS2, 50);
+
+        // Assert
         uint256 res4 = CMTAT_CONTRACT.balanceOf(ADDRESS2);
         assertEq(res4, 50);
 
@@ -55,22 +60,25 @@ contract MintModuleTest is Test, HelperContract, MintModule, ERC20Upgradeable {
         assertEq(res5, 70);
     }
 
-    // can be minted by anyone with minter role
-    function testCanBeMintedByMinterRole() public {
-        vm.prank(OWNER);
+    function testCanBeMintedByANewMinter() public {
+        // Arrange
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.grantRole(MINTER_ROLE, ADDRESS1);
+        // Arrange - Assert
         // Check first balance
-        uint256 res1 = CMTAT_CONTRACT.balanceOf(OWNER);
+        uint256 res1 = CMTAT_CONTRACT.balanceOf(ADMIN_ADDRESS);
         assertEq(res1, 0);
 
-        // Issue 20 and check balances and total supply
+        // Act
+        // Issue 20
         vm.prank(ADDRESS1);
-        //log1
         vm.expectEmit(true, true, false, true);
         emit Transfer(ZERO_ADDRESS, ADDRESS1, 20);
         emit Mint(ADDRESS1, 20);
         CMTAT_CONTRACT.mint(ADDRESS1, 20);
 
+        // Assert
+        // Check balances and total supply
         uint256 res2 = CMTAT_CONTRACT.balanceOf(ADDRESS1);
         assertEq(res2, 20);
 
@@ -78,8 +86,9 @@ contract MintModuleTest is Test, HelperContract, MintModule, ERC20Upgradeable {
         assertEq(res3, 20);
     }
 
-    // reverts when issuing from non-owner
-    function testCannotIssuingFromNonOwner() public {
+    // reverts when issuing by a non minter
+    function testCannotIssuingByNonMinter() public {
+        // Act
         vm.prank(ADDRESS1);
         string memory message = string(
             abi.encodePacked(
