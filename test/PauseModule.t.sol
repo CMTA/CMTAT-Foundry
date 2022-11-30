@@ -7,39 +7,56 @@ import "./HelperContract.sol";
 
 contract PauseModuleTest is Test, HelperContract, PauseModule {
     function setUp() public {
-        vm.prank(OWNER);
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
         CMTAT_CONTRACT.initialize(
-            OWNER,
+            ADMIN_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
             "https://cmta.ch"
         );
+        // Mint tokens to test the transfer
+        vm.prank(ADMIN_ADDRESS);
+        CMTAT_CONTRACT.mint(ADDRESS1, 20);
     }
 
-    // can be paused by the owner
-    function testPausedByOwner() public {
-        vm.prank(OWNER);
+    /**
+    The admin is assigned the PAUSER role when the contract is deployed
+    */
+    function testCanBePausedByAdmin() public {
+        // Act
+        vm.prank(ADMIN_ADDRESS);
         vm.expectEmit(false, false, false, true);
-        emit Paused(OWNER);
+        emit Paused(ADMIN_ADDRESS);
         CMTAT_CONTRACT.pause();
+        // Assert
+        vm.prank(ADDRESS1);
+        vm.expectRevert(bytes("CMTAT: token transfer while paused"));
+        CMTAT_CONTRACT.transfer(ADDRESS2, 10);
     }
 
-    // can be paused by the anyone having pauser role
-    function testPausedByPauserRole() public {
-        vm.prank(OWNER);
-        // TODO : Check event
+    function testCanBePausedByANewPauser() public {
+        // Arrange
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.grantRole(PAUSER_ROLE, ADDRESS1);
 
+        // Assert
+        vm.expectEmit(false, false, false, true);
+        emit Paused(ADDRESS1);
+
+        // Act
         vm.prank(ADDRESS1);
-        // TODO : Check event
         CMTAT_CONTRACT.pause();
+
+        // Assert
+        vm.prank(ADDRESS1);
+        vm.expectRevert(bytes("CMTAT: token transfer while paused"));
+        CMTAT_CONTRACT.transfer(ADDRESS2, 10);
     }
 
-    // reverts when calling from non-owner
-    function testCannotWhenCallingFromNonOwner() public {
-        //Strings.toHexString (abi.encodePacked(PAUSER_ROLE)
+    function testCannotBePausedByNonPauser() public {
+        // Assert
         string memory message = string(
             abi.encodePacked(
                 "AccessControl: account ",
@@ -49,40 +66,56 @@ contract PauseModuleTest is Test, HelperContract, PauseModule {
             )
         );
         vm.expectRevert(bytes(message));
+        // Act
         vm.prank(ADDRESS1);
         CMTAT_CONTRACT.pause();
     }
 
-    // can be unpaused by the owner
-    function testUnpausedByOwner() public {
-        vm.prank(OWNER);
+    function testCanBeUnpausedByAdmin() public {
+        // Arrange
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.pause();
 
-        vm.prank(OWNER);
+        // Assert
         vm.expectEmit(false, false, false, true);
-        emit Unpaused(OWNER);
+        emit Unpaused(ADMIN_ADDRESS);
+
+        // Act
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.unpause();
+
+        // Assert
+        vm.prank(ADDRESS1);
+        // Transfer works
+        CMTAT_CONTRACT.transfer(ADDRESS2, 10);
     }
 
-    // can be paused by the anyone having pauser role
-    function testcanBePausedByPauserRole() public {
-        // TODO : Replace owner by adress1 to call the function pause
-        vm.prank(OWNER);
+    function testCanBeUnpausedByANewPauser() public {
+        // Arrange
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.pause();
-
-        vm.prank(OWNER);
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.grantRole(PAUSER_ROLE, ADDRESS1);
 
+        // Assert
+        vm.expectEmit(false, false, false, true);
+        emit Unpaused(ADDRESS1);
+        
+        // Act
         vm.prank(ADDRESS1);
         CMTAT_CONTRACT.unpause();
+
+        // Assert
+        vm.prank(ADDRESS1);
+        // Transfer works
+        CMTAT_CONTRACT.transfer(ADDRESS2, 10);
     }
 
-    // reverts when calling from non-owner
-    function testCannotPauseNonOwner() public {
-        // TODO : Replace owner by adress1 to call the function pause
-        vm.prank(OWNER);
+    function testCannotBeUnpausedByNonPauser() public {
+        // Arrange
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.pause();
-        vm.prank(ADDRESS1);
+        // Assert
         string memory message = string(
             abi.encodePacked(
                 "AccessControl: account ",
@@ -92,15 +125,18 @@ contract PauseModuleTest is Test, HelperContract, PauseModule {
             )
         );
         vm.expectRevert(bytes(message));
+        // Act
+        vm.prank(ADDRESS1);
         CMTAT_CONTRACT.unpause();
     }
 
     // reverts if address1 transfers tokens to address2 when paused
     function testCannotTransferTokenWhenPaused_A() public {
-        vm.prank(OWNER);
+        // Act
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.pause();
 
-        //detectTransferRestriction
+        // Assert
         uint8 res1 = CMTAT_CONTRACT.detectTransferRestriction(
             ADDRESS1,
             ADDRESS2,
@@ -118,13 +154,16 @@ contract PauseModuleTest is Test, HelperContract, PauseModule {
 
     // reverts if address3 transfers tokens from address1 to address2 when paused
     function testCannotTransferTokenWhenPaused_B() public {
-        vm.prank(ADDRESS1);
+        // Arrange
         // Define allowance
+        vm.prank(ADDRESS1);
         CMTAT_CONTRACT.approve(ADDRESS3, 20);
 
-        vm.prank(OWNER);
+        // Act
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.pause();
 
+        // Assert
         uint8 res1 = CMTAT_CONTRACT.detectTransferRestriction(
             ADDRESS1,
             ADDRESS2,
