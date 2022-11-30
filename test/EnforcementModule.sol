@@ -17,16 +17,16 @@ contract EnforcementAuthorizationModule is
     bool resBool;
 
     function setUp() public {
-        vm.prank(OWNER);
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
         CMTAT_CONTRACT.initialize(
-            OWNER,
+            ADMIN_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
             "https://cmta.ch"
         );
-        vm.prank(OWNER);
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.mint(ADDRESS1, 50);
     }
 
@@ -39,8 +39,8 @@ contract EnforcementAuthorizationModule is
         assertFalse(resBool);
         // Act
         vm.expectEmit(true, true,false, false);
-        emit Freeze(OWNER, ADDRESS1);
-        vm.prank(OWNER);
+        emit Freeze(ADMIN_ADDRESS, ADDRESS1);
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.freeze(ADDRESS1);
         // Assert
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
@@ -49,7 +49,7 @@ contract EnforcementAuthorizationModule is
 
     function testEnforcerRoleCanFreezeAddress() public {
         // Arrange
-        vm.prank(OWNER);
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.grantRole(ENFORCER_ROLE, ADDRESS2);
         // Arrange - Assert
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
@@ -66,15 +66,15 @@ contract EnforcementAuthorizationModule is
 
     function testAdminCanUnfreezeAddress() public {
         // Arrange
-        vm.prank(OWNER);
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.freeze(ADDRESS1);
         // Arrange - Assert
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
         assertEq(resBool, true);
         // Act
         vm.expectEmit(true, true,false, false);
-        emit Unfreeze(OWNER, ADDRESS1);
-        vm.prank(OWNER);
+        emit Unfreeze(ADMIN_ADDRESS, ADDRESS1);
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.unfreeze(ADDRESS1);
         // Assert
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
@@ -83,9 +83,9 @@ contract EnforcementAuthorizationModule is
 
     function testEnforcerRoleCanUnfreezeAddress() public {
         // Arrange
-        vm.prank(OWNER);
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.freeze(ADDRESS1);
-        vm.prank(OWNER);
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.grantRole(ENFORCER_ROLE, ADDRESS2);
         // Arrange - Assert
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
@@ -120,7 +120,7 @@ contract EnforcementAuthorizationModule is
 
     function testCannotNonEnforcerUnfreezeAddress() public {
         // Arrange
-        vm.prank(OWNER);
+        vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.freeze(ADDRESS1);
         // Act
         string memory message = string(
