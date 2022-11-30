@@ -11,6 +11,7 @@ contract AuthorizationModuleTest is
     AuthorizationModule,
     PauseModule
 {
+    bool resBool;
     function setUp() public {
         vm.prank(OWNER);
         CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
@@ -23,38 +24,39 @@ contract AuthorizationModuleTest is
         );
     }
 
-    // can grant role as the owner
-    function testCanGrantRoleAsOwner() public {
-        vm.prank(OWNER);
+    function testAdminCanGrantRole() public {
+        // Act
         vm.expectEmit(true, true, false, true);
         emit RoleGranted(PAUSER_ROLE, ADDRESS1, OWNER);
-
-        CMTAT_CONTRACT.grantRole(PAUSER_ROLE, ADDRESS1);
-        bool res1 = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
-        assertEq(res1, true);
-    }
-
-    // can revoke role as the owner
-    function testRevokeRoleAsOwner() public {
         vm.prank(OWNER);
         CMTAT_CONTRACT.grantRole(PAUSER_ROLE, ADDRESS1);
-        bool res1 = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
-        assertEq(res1, true);
+        // Assert
+        resBool = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
+        assertEq(resBool, true);
+    }
 
+    function testAdminCanRevokeRole() public {
+        // Arrange
+        vm.prank(OWNER);
+        CMTAT_CONTRACT.grantRole(PAUSER_ROLE, ADDRESS1);
+        // Arrange - Assert
+        resBool = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
+        assertEq(resBool, true);
+        // Act
         vm.prank(OWNER);
         vm.expectEmit(true, true, false, true);
-        // emits a RoleRevoked event
         emit RoleRevoked(PAUSER_ROLE, ADDRESS1, OWNER);
         CMTAT_CONTRACT.revokeRole(PAUSER_ROLE, ADDRESS1);
-        bool res2 = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
-        assertFalse(res2);
+        // Assert
+        bool resBool = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
+        assertFalse(resBool);
     }
 
-    // reverts when granting from non-owner
-    function testCannotGrantFromNonOwner() public {
-        bool res1 = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
-        assertFalse(res1);
-
+    function testCannotNonAdminGrantRole() public {
+        // Arrange - Assert
+        resBool = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
+        assertFalse(resBool);
+        // Act
         string memory message = string(
             abi.encodePacked(
                 "AccessControl: account ",
@@ -66,21 +68,21 @@ contract AuthorizationModuleTest is
         vm.expectRevert(bytes(message));
         vm.prank(ADDRESS2);
         CMTAT_CONTRACT.grantRole(PAUSER_ROLE, ADDRESS1);
-
-        bool res2 = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
-        assertFalse(res2);
+        // Assert
+        bool resBool = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
+        assertFalse(resBool);
     }
 
-    // reverts when revoking from non-owner
-    function testCannotRevokeFromNonOwner() public {
-        bool res1 = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
-        assertFalse(res1);
-
+    function testCannotNonAdminRevokeRole() public {
+        // Arrange
+        resBool = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
+        assertFalse(resBool);
         vm.prank(OWNER);
         CMTAT_CONTRACT.grantRole(PAUSER_ROLE, ADDRESS1);
-        bool res2 = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
-        assertEq(res2, true);
-
+        // Arrange - Assert
+        resBool = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
+        assertEq(resBool, true);
+        // Act
         vm.prank(ADDRESS2);
         string memory message = string(
             abi.encodePacked(
@@ -92,8 +94,8 @@ contract AuthorizationModuleTest is
         );
         vm.expectRevert(bytes(message));
         CMTAT_CONTRACT.revokeRole(PAUSER_ROLE, ADDRESS1);
-
-        bool res3 = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
-        assertEq(res3, true);
+        // assert
+        resBool = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
+        assertEq(resBool, true);
     }
 }
