@@ -21,6 +21,9 @@ contract BurnModuleTest is Test, HelperContract, BurnModule, ERC20Upgradeable {
         assertEq(resUint256, 50);
     }
 
+    /**
+    The admin is assigned the BURNER role when the contract is deployed
+    */
     function testCanBeBurntByAdminWithAllowance() public {
         // Arrange
         vm.prank(ADDRESS1);
