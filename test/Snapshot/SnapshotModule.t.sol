@@ -3,18 +3,16 @@ pragma solidity ^0.8.17;
 import "../HelperContract.sol";
 
 // Snapshoting
-contract SnapshotingModuleConfig is Test, HelperContract, SnapshotModule {
+contract SnapshotingModuleConfig is Test, HelperContract, SnasphotModule {
     function config() public {
         vm.warp(200);
         vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
-        CMTAT_CONTRACT.initialize(
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
             OWNER,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch"
-        );
+            "https://cmta.ch");
 
         // Config personal
         vm.prank(OWNER);
@@ -128,7 +126,7 @@ contract onePlannedSnapshotTest is SnapshotingModuleConfig {
         );
         assertEq(resUint256, 32);
         vm.prank(OWNER);
-        CMTAT_CONTRACT.burnFrom(ADDRESS1, 20);
+        CMTAT_CONTRACT.forceBurn(ADDRESS1, 20);
         resUint256 = CMTAT_CONTRACT.snapshotTotalSupply(beforeSnapshotTime);
         assertEq(resUint256, 96);
         resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
