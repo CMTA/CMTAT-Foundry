@@ -6,7 +6,7 @@ import "../HelperContract.sol";
 contract SnapshotReschedulingModuleTest is
     HelperContract,
     Test,
-    SnapshotModule
+    SnasphotModule
 {
     uint256 snapshotTime;
     uint256 newSnapshotTime;
@@ -14,14 +14,12 @@ contract SnapshotReschedulingModuleTest is
     function setUp() public {
         vm.prank(OWNER);
         vm.warp(100);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
-        CMTAT_CONTRACT.initialize(
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
             OWNER,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch"
-        );
+            "https://cmta.ch");
 
         // Config personal
         snapshotTime = block.timestamp + 60;

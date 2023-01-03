@@ -2,21 +2,19 @@
 pragma solidity ^0.8.17;
 import "../HelperContract.sol";
 
-contract SnapshotSchedulingModuleTest is Test, HelperContract, SnapshotModule {
+contract SnapshotSchedulingModuleTest is Test, HelperContract, SnasphotModule {
     uint256 snapshotTime;
 
     function setUp() public {
         vm.warp(100);
         snapshotTime = block.timestamp + 60;
         vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
-        CMTAT_CONTRACT.initialize(
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
             OWNER,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch"
-        );
+            "https://cmta.ch");
     }
 
     // can schedule a snapshot with the snapshoter role
@@ -70,21 +68,19 @@ contract SnapshotSchedulingModuleTest is Test, HelperContract, SnapshotModule {
 contract SnapshotUnSchedulingModuleTest is
     Test,
     HelperContract,
-    SnapshotModule
+    SnasphotModule
 {
     uint256 snapshotTime;
 
     function setUp() public {
         vm.warp(200);
         vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
-        CMTAT_CONTRACT.initialize(
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
             OWNER,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch"
-        );
+            "https://cmta.ch");
 
         // Config personal
         snapshotTime = block.timestamp + 60;

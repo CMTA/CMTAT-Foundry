@@ -2,30 +2,24 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "CMTAT/modules/EnforcementModule.sol";
-import "CMTAT/modules/PauseModule.sol";
-import "CMTAT/modules/AuthorizationModule.sol";
 import "./HelperContract.sol";
 
 contract EnforcementAuthorizationModule is
     Test,
     HelperContract,
     EnforcementModule,
-    PauseModule,
-    AuthorizationModule
+    PauseModule
 {
     bool resBool;
 
     function setUp() public {
         vm.prank(ADMIN_ADDRESS);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
-        CMTAT_CONTRACT.initialize(
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
             ADMIN_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch"
-        );
+            "https://cmta.ch");
         vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.mint(ADDRESS1, 50);
     }

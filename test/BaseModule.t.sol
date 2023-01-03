@@ -2,20 +2,17 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "CMTAT/modules/PauseModule.sol";
 import "./HelperContract.sol";
 
 contract BaseModuleTest is Test, HelperContract, BaseModule {
     function setUp() public {
         vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
-        CMTAT_CONTRACT.initialize(
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
             OWNER,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch"
-        );
+            "https://cmta.ch");
     }
 
     function testHasTheDefinedName() public {
@@ -146,17 +143,15 @@ contract BaseModuleTest is Test, HelperContract, BaseModule {
     }
 }
 
-contract AllowanceTest is Test, HelperContract, BaseModule {
+contract AllowanceTest is Test, HelperContract, BaseModule, ERC20BaseModule {
     function setUp() public {
         vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
-        CMTAT_CONTRACT.initialize(
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
             OWNER,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch"
-        );
+            "https://cmta.ch");
     }
 
     // address1 -> address3
@@ -277,17 +272,15 @@ contract AllowanceTest is Test, HelperContract, BaseModule {
     }
 }
 
-contract TransferTest is Test, HelperContract, BaseModule {
+contract TransferTest is Test, HelperContract, BaseModule, ERC20BaseModule {
     function setUp() public {
         vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
-        CMTAT_CONTRACT.initialize(
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
             OWNER,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch"
-        );
+            "https://cmta.ch");
 
         // Personal config
         vm.prank(OWNER);

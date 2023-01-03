@@ -2,19 +2,17 @@
 pragma solidity ^0.8.17;
 import "./HelperContract.sol";
 
-contract BurnModuleTest is Test, HelperContract, BurnModule, ERC20Upgradeable {
+contract BurnModuleTest is Test, HelperContract, BurnModule {
     uint256 resUint256;
 
     function setUp() public {
         vm.prank(ADMIN_ADDRESS);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
-        CMTAT_CONTRACT.initialize(
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
             ADMIN_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch"
-        );
+            "https://cmta.ch");
         vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.mint(ADDRESS1, 50);
         resUint256 = CMTAT_CONTRACT.totalSupply();
@@ -38,7 +36,7 @@ contract BurnModuleTest is Test, HelperContract, BurnModule, ERC20Upgradeable {
 
         // Act
         vm.prank(ADMIN_ADDRESS);
-        CMTAT_CONTRACT.burnFrom(ADDRESS1, 20);
+        CMTAT_CONTRACT.forceBurn(ADDRESS1, 20);
         
         // Assert
         // Check balances and total supply
@@ -56,7 +54,7 @@ contract BurnModuleTest is Test, HelperContract, BurnModule, ERC20Upgradeable {
         vm.prank(ADMIN_ADDRESS);
 
         // Act
-        CMTAT_CONTRACT.burnFrom(ADDRESS1, 30);
+        CMTAT_CONTRACT.forceBurn(ADDRESS1, 30);
 
         // Assert
         // check balances and total supply
@@ -81,7 +79,7 @@ contract BurnModuleTest is Test, HelperContract, BurnModule, ERC20Upgradeable {
 
         // Act
         vm.prank(ADDRESS2);
-        CMTAT_CONTRACT.burnFrom(ADDRESS1, 20);
+        CMTAT_CONTRACT.forceBurn(ADDRESS1, 20);
 
         // Assert
         resUint256 = CMTAT_CONTRACT.balanceOf(ADDRESS1);
@@ -90,12 +88,12 @@ contract BurnModuleTest is Test, HelperContract, BurnModule, ERC20Upgradeable {
         assertEq(resUint256, 30);
     }
 
-    function testCannotBeBurntWithoutAllowance() public {
+    function testCannotBeBurntIfBalanceExceeds() public {
         // Assert
-        vm.expectRevert(bytes("CMTAT: burn amount exceeds allowance"));
+        vm.expectRevert(bytes("ERC20: burn amount exceeds balance"));
         // Act
         vm.prank(ADMIN_ADDRESS);
-        CMTAT_CONTRACT.burnFrom(ADDRESS1, 20);
+        CMTAT_CONTRACT.forceBurn(ADDRESS1, 200);
     }
 
     function testCannotBeBurntWithoutBurnerRole() public {
@@ -111,6 +109,6 @@ contract BurnModuleTest is Test, HelperContract, BurnModule, ERC20Upgradeable {
         vm.expectRevert(bytes(message));
         // Act
         vm.prank(ADDRESS2);
-        CMTAT_CONTRACT.burnFrom(ADDRESS1, 20);
+        CMTAT_CONTRACT.forceBurn(ADDRESS1, 20);
     }
 }

@@ -2,20 +2,17 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "CMTAT/modules/PauseModule.sol";
 import "./HelperContract.sol";
 
 contract PauseModuleTest is Test, HelperContract, PauseModule {
     function setUp() public {
         vm.prank(ADMIN_ADDRESS);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS);
-        CMTAT_CONTRACT.initialize(
+        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
             ADMIN_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch"
-        );
+            "https://cmta.ch");
         // Mint tokens to test the transfer
         vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.mint(ADDRESS1, 20);
