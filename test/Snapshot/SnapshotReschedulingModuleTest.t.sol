@@ -6,7 +6,7 @@ import "../HelperContract.sol";
 contract SnapshotReschedulingModuleTest is
     HelperContract,
     Test,
-    SnasphotModule
+    SnapshotModule
 {
     uint256 snapshotTime;
     uint256 newSnapshotTime;
@@ -66,7 +66,7 @@ contract SnapshotReschedulingModuleTest is
         vm.prank(OWNER);
         CMTAT_CONTRACT.rescheduleSnapshot(snapshotTime, newSnapshotTime);
         vm.prank(OWNER);
-        vm.expectRevert(bytes("Snapshot already scheduled for this time"));
+        vm.expectRevert(bytes("Snapshot not found"));
         CMTAT_CONTRACT.rescheduleSnapshot(snapshotTime, newSnapshotTime);
         uint256[] memory snapshots = CMTAT_CONTRACT.getNextSnapshots();
         assertEq(snapshots.length, 1);

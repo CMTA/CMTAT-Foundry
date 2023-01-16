@@ -11,6 +11,8 @@ contract EnforcementAuthorizationModule is
     PauseModule
 {
     bool resBool;
+    string constant reasonFreeze = 'testFreeze';
+    string constant reasonUnfreeze = 'testUnfreeze';
 
     function setUp() public {
         vm.prank(ADMIN_ADDRESS);
@@ -32,10 +34,10 @@ contract EnforcementAuthorizationModule is
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
         assertFalse(resBool);
         // Act
-        vm.expectEmit(true, true,false, false);
-        emit Freeze(ADMIN_ADDRESS, ADDRESS1);
+        vm.expectEmit(true, true, true, true);
+        emit Freeze(ADMIN_ADDRESS, ADDRESS1, reasonFreeze, reasonFreeze);
         vm.prank(ADMIN_ADDRESS);
-        CMTAT_CONTRACT.freeze(ADDRESS1);
+        CMTAT_CONTRACT.freeze(ADDRESS1, reasonFreeze);
         // Assert
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
         assertEq(resBool, true);
@@ -49,10 +51,10 @@ contract EnforcementAuthorizationModule is
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
         assertFalse(resBool);
         // Act
-        vm.expectEmit(true, true,false, false);
-        emit Freeze(ADDRESS2, ADDRESS1);
+        vm.expectEmit(true, true, true, true);
+        emit Freeze(ADDRESS2, ADDRESS1, reasonFreeze, reasonFreeze);
         vm.prank(ADDRESS2);
-        CMTAT_CONTRACT.freeze(ADDRESS1);
+        CMTAT_CONTRACT.freeze(ADDRESS1, reasonFreeze);
         // Assert
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
         assertEq(resBool, true);
@@ -61,15 +63,15 @@ contract EnforcementAuthorizationModule is
     function testAdminCanUnfreezeAddress() public {
         // Arrange
         vm.prank(ADMIN_ADDRESS);
-        CMTAT_CONTRACT.freeze(ADDRESS1);
+        CMTAT_CONTRACT.freeze(ADDRESS1, reasonFreeze);
         // Arrange - Assert
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
         assertEq(resBool, true);
         // Act
-        vm.expectEmit(true, true,false, false);
-        emit Unfreeze(ADMIN_ADDRESS, ADDRESS1);
+        vm.expectEmit(true, true, true, true);
+        emit Unfreeze(ADMIN_ADDRESS, ADDRESS1, reasonUnfreeze, reasonUnfreeze );
         vm.prank(ADMIN_ADDRESS);
-        CMTAT_CONTRACT.unfreeze(ADDRESS1);
+        CMTAT_CONTRACT.unfreeze(ADDRESS1, reasonUnfreeze);
         // Assert
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
         assertEq(resBool, false);
@@ -78,17 +80,17 @@ contract EnforcementAuthorizationModule is
     function testEnforcerRoleCanUnfreezeAddress() public {
         // Arrange
         vm.prank(ADMIN_ADDRESS);
-        CMTAT_CONTRACT.freeze(ADDRESS1);
+        CMTAT_CONTRACT.freeze(ADDRESS1, reasonFreeze);
         vm.prank(ADMIN_ADDRESS);
         CMTAT_CONTRACT.grantRole(ENFORCER_ROLE, ADDRESS2);
         // Arrange - Assert
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
         assertEq(resBool, true);
         // Act
-        vm.expectEmit(true, true, false, false);
-        emit Unfreeze(ADDRESS2, ADDRESS1);
+        vm.expectEmit(true, true, true, true);
+        emit Unfreeze(ADDRESS2, ADDRESS1, reasonUnfreeze, reasonUnfreeze);
         vm.prank(ADDRESS2);
-        CMTAT_CONTRACT.unfreeze(ADDRESS1);
+        CMTAT_CONTRACT.unfreeze(ADDRESS1, reasonUnfreeze);
         // Assert
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
         assertEq(resBool, false);
@@ -106,7 +108,7 @@ contract EnforcementAuthorizationModule is
         );
         vm.expectRevert(bytes(message));
         vm.prank(ADDRESS2);
-        CMTAT_CONTRACT.freeze(ADDRESS1);
+        CMTAT_CONTRACT.freeze(ADDRESS1, reasonFreeze);
         // Assert
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
         assertEq(resBool, false);
@@ -115,7 +117,7 @@ contract EnforcementAuthorizationModule is
     function testCannotNonEnforcerUnfreezeAddress() public {
         // Arrange
         vm.prank(ADMIN_ADDRESS);
-        CMTAT_CONTRACT.freeze(ADDRESS1);
+        CMTAT_CONTRACT.freeze(ADDRESS1, reasonFreeze);
         // Act
         string memory message = string(
             abi.encodePacked(
@@ -127,7 +129,7 @@ contract EnforcementAuthorizationModule is
         );
         vm.expectRevert(bytes(message));
         vm.prank(ADDRESS2);
-        CMTAT_CONTRACT.unfreeze(ADDRESS1);
+        CMTAT_CONTRACT.unfreeze(ADDRESS1, reasonUnfreeze);
         // Assert
         resBool = CMTAT_CONTRACT.frozen(ADDRESS1);
         assertEq(resBool, true);

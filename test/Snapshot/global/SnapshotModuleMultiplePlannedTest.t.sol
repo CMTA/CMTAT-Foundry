@@ -1,208 +1,8 @@
-//SPDX-License-Identifier: MPL-2.0
+///SPDX-License-Identifier: MPL-2.0
 pragma solidity ^0.8.17;
-import "../HelperContract.sol";
-
-// Snapshoting
-contract SnapshotingModuleConfig is Test, HelperContract, SnasphotModule {
-    function config() public {
-        vm.warp(200);
-        vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
-            OWNER,
-            "CMTA Token",
-            "CMTAT",
-            "CMTAT_ISIN",
-            "https://cmta.ch");
-
-        // Config personal
-        vm.prank(OWNER);
-        CMTAT_CONTRACT.mint(ADDRESS1, 31);
-        vm.prank(OWNER);
-        CMTAT_CONTRACT.mint(ADDRESS2, 32);
-        vm.prank(OWNER);
-        CMTAT_CONTRACT.mint(ADDRESS3, 33);
-    }
-}
-
-contract BeforeAnySnaphotTest is SnapshotingModuleConfig {
-    function setUp() public {
-        SnapshotingModuleConfig.config();
-    }
-
-    // context : Before any snapshot'
-    // can get the total supply
-    function testCanGetTotalSupply() public {
-        uint256 res1 = CMTAT_CONTRACT.snapshotTotalSupply(block.timestamp);
-        assertEq(res1, 96);
-    }
-
-    // can get the balance of an address
-    function testCanGetBalanceAddress() public {
-        uint256 res1 = CMTAT_CONTRACT.snapshotBalanceOf(
-            block.timestamp,
-            ADDRESS1
-        );
-        assertEq(res1, 31);
-    }
-}
-
-// With one planned snapshot
-contract onePlannedSnapshotTest is SnapshotingModuleConfig {
-    uint256 snapshotTime;
-    uint256 beforeSnapshotTime;
-    uint256 initBlockTimeStamp = 200;
-
-    function setUp() public {
-        SnapshotingModuleConfig.config();
-        snapshotTime = block.timestamp + 1;
-        beforeSnapshotTime = block.timestamp - 60;
-        vm.prank(OWNER);
-        CMTAT_CONTRACT.scheduleSnapshot(snapshotTime);
-
-        //Timeout
-        vm.warp(initBlockTimeStamp + 200);
-    }
-
-    // can mint tokens
-    function testCanMintTokens() public {
-        uint256 resUint256;
-        resUint256 = CMTAT_CONTRACT.snapshotTotalSupply(block.timestamp);
-        assertEq(resUint256, 96);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            block.timestamp,
-            ADDRESS1
-        );
-        assertEq(resUint256, 31);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            block.timestamp,
-            ADDRESS2
-        );
-        assertEq(resUint256, 32);
-        vm.prank(OWNER);
-        CMTAT_CONTRACT.mint(ADDRESS1, 20);
-        resUint256 = CMTAT_CONTRACT.snapshotTotalSupply(beforeSnapshotTime);
-        assertEq(resUint256, 96);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            beforeSnapshotTime,
-            ADDRESS1
-        );
-        assertEq(resUint256, 31);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            beforeSnapshotTime,
-            ADDRESS2
-        );
-        assertEq(resUint256, 32);
-        resUint256 = CMTAT_CONTRACT.snapshotTotalSupply(block.timestamp);
-        assertEq(resUint256, 116);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            block.timestamp,
-            ADDRESS1
-        );
-        assertEq(resUint256, 51);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            block.timestamp,
-            ADDRESS2
-        );
-        assertEq(resUint256, 32);
-        uint256[] memory snapshots = CMTAT_CONTRACT.getNextSnapshots();
-        assertEq(snapshots.length, 0);
-    }
-
-    // can burn tokens
-    function testCanBurnTokens() public {
-        uint256 resUint256;
-        vm.prank(ADDRESS1);
-        CMTAT_CONTRACT.approve(OWNER, 50);
-        resUint256 = CMTAT_CONTRACT.snapshotTotalSupply(block.timestamp);
-        assertEq(resUint256, 96);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            block.timestamp,
-            ADDRESS1
-        );
-        assertEq(resUint256, 31);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            block.timestamp,
-            ADDRESS2
-        );
-        assertEq(resUint256, 32);
-        vm.prank(OWNER);
-        CMTAT_CONTRACT.forceBurn(ADDRESS1, 20);
-        resUint256 = CMTAT_CONTRACT.snapshotTotalSupply(beforeSnapshotTime);
-        assertEq(resUint256, 96);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            beforeSnapshotTime,
-            ADDRESS1
-        );
-        assertEq(resUint256, 31);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            beforeSnapshotTime,
-            ADDRESS2
-        );
-        assertEq(resUint256, 32);
-        resUint256 = CMTAT_CONTRACT.snapshotTotalSupply(block.timestamp);
-        assertEq(resUint256, 76);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            block.timestamp,
-            ADDRESS1
-        );
-        assertEq(resUint256, 11);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            block.timestamp,
-            ADDRESS2
-        );
-        assertEq(resUint256, 32);
-        uint256[] memory snapshots = CMTAT_CONTRACT.getNextSnapshots();
-        assertEq(snapshots.length, 0);
-    }
-
-    // can transfer tokens
-    function testCanTransferTokens() public {
-        uint256 resUint256;
-        resUint256 = CMTAT_CONTRACT.snapshotTotalSupply(block.timestamp);
-        assertEq(resUint256, 96);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            block.timestamp,
-            ADDRESS1
-        );
-        assertEq(resUint256, 31);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            block.timestamp,
-            ADDRESS2
-        );
-        assertEq(resUint256, 32);
-        vm.prank(ADDRESS1);
-        CMTAT_CONTRACT.transfer(ADDRESS2, 20);
-        resUint256 = CMTAT_CONTRACT.snapshotTotalSupply(beforeSnapshotTime);
-        assertEq(resUint256, 96);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            beforeSnapshotTime,
-            ADDRESS1
-        );
-        assertEq(resUint256, 31);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            beforeSnapshotTime,
-            ADDRESS2
-        );
-        assertEq(resUint256, 32);
-        resUint256 = CMTAT_CONTRACT.snapshotTotalSupply(block.timestamp);
-        assertEq(resUint256, 96);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            block.timestamp,
-            ADDRESS1
-        );
-        assertEq(resUint256, 11);
-        resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
-            block.timestamp,
-            ADDRESS2
-        );
-        assertEq(resUint256, 52);
-        uint256[] memory snapshots = CMTAT_CONTRACT.getNextSnapshots();
-        assertEq(snapshots.length, 0);
-    }
-}
-
+import "../../HelperContract.sol";
+import "./SnapshotModuleUtils/SnapshotingModuleConfig.sol";
 // With multiple planned snapshot
-
 contract SnapshotMultiplePlannedTest is SnapshotingModuleConfig {
     SnapshotingModuleConfig snapshotingModuleConfig =
         new SnapshotingModuleConfig();
@@ -226,7 +26,6 @@ contract SnapshotMultiplePlannedTest is SnapshotingModuleConfig {
         vm.prank(OWNER);
         CMTAT_CONTRACT.scheduleSnapshot(snapshotTime3);
         vm.warp(block.timestamp + 3);
-        // await timeout(3000);
     }
 
     // can transfer tokens after first snapshot
@@ -288,7 +87,6 @@ contract SnapshotMultiplePlannedTest is SnapshotingModuleConfig {
         assertEq(snapshots.length, 2);
     }
 
-    // can transfer tokens after second snapshot
     function testCanTransferAfterSecondSnapshot() public {
         //Timeout
         vm.warp(snapshotTime2 + 1);
@@ -330,8 +128,7 @@ contract SnapshotMultiplePlannedTest is SnapshotingModuleConfig {
         assertEq(snapshots.length, 1);
     }
 
-    // can transfer tokens after third snapshot
-    function testTransferAfterThirdSnapshot() public {
+    function testCanTransferAfterThirdSnapshot() public {
         uint256 resUint256;
         vm.warp(snapshotTime3 + 1);
         // await timeout(10000);
@@ -371,8 +168,8 @@ contract SnapshotMultiplePlannedTest is SnapshotingModuleConfig {
         assertEq(snapshots.length, 0);
     }
 
-    // can transfer tokens multiple times between snapshots
-    function testTransferTokensMultipleTimes() public {
+    function testCanTransferTokensMultipleTimes() public {
+        // Arrange - Assert
         uint256 resUint256;
         uint256[] memory snapshots;
         resUint256 = CMTAT_CONTRACT.snapshotTotalSupply(block.timestamp);
@@ -387,6 +184,7 @@ contract SnapshotMultiplePlannedTest is SnapshotingModuleConfig {
             ADDRESS2
         );
         assertEq(resUint256, 32);
+        // Act
         vm.prank(ADDRESS1);
         vm.warp(snapshotTime1 + 1);
         CMTAT_CONTRACT.transfer(ADDRESS2, 20);
@@ -421,6 +219,8 @@ contract SnapshotMultiplePlannedTest is SnapshotingModuleConfig {
         vm.prank(ADDRESS2);
         vm.warp(snapshotTime2 + 1);
         CMTAT_CONTRACT.transfer(ADDRESS1, 10);
+        // Assert
+        // Values before the snapshot
         resUint256 = CMTAT_CONTRACT.snapshotTotalSupply(beforeSnapshotTime);
         assertEq(resUint256, 96);
         resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(
@@ -433,6 +233,7 @@ contract SnapshotMultiplePlannedTest is SnapshotingModuleConfig {
             ADDRESS2
         );
         assertEq(resUint256, 32);
+        // Values now
         resUint256 = CMTAT_CONTRACT.snapshotTotalSupply(snapshotTime1);
         assertEq(resUint256, 96);
         resUint256 = CMTAT_CONTRACT.snapshotBalanceOf(snapshotTime1, ADDRESS1);
