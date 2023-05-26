@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.17;
 
-abstract contract CodeList {
+abstract contract CodeListInternal {
     
     uint8 constant NO_ERROR = 0;
     // Used by RuleMock.sol

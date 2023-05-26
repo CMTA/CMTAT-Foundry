@@ -6,13 +6,18 @@ import "./HelperContract.sol";
 
 contract BaseModuleTest is Test, HelperContract, BaseModule {
     function setUp() public {
-        vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
-            OWNER,
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
+        CMTAT_CONTRACT = new CMTAT_STANDALONE(
+            ZERO_ADDRESS,
+            DEFAULT_ADMIN_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch");
+            "https://cmta.ch",
+            IRuleEngine(address(0)),
+            "CMTAT_info",
+            FLAG
+        );
     }
 
     function testHasTheDefinedName() public {
@@ -56,7 +61,7 @@ contract BaseModuleTest is Test, HelperContract, BaseModule {
         // Arrange - Assert
         assertEq(res1, "CMTAT_ISIN");
         // Act
-        vm.prank(OWNER);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.setTokenId("CMTAT_TOKENID");
         // Assert
         string memory res2 = CMTAT_CONTRACT.tokenId();
@@ -89,7 +94,7 @@ contract BaseModuleTest is Test, HelperContract, BaseModule {
         string memory res1 = CMTAT_CONTRACT.terms();
         assertEq(res1, "https://cmta.ch");
         // Act
-        vm.prank(OWNER);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.setTerms("https://cmta.ch/terms");
         // Assert
         string memory res2 = CMTAT_CONTRACT.terms();
@@ -118,7 +123,7 @@ contract BaseModuleTest is Test, HelperContract, BaseModule {
     }
 
     function testAdminCanKillContract() public {
-        vm.prank(OWNER);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.kill();
         // TODO : Check if the contract is really kill
         //  Check if the ethers inside the contract is sent to the right address
@@ -145,13 +150,18 @@ contract BaseModuleTest is Test, HelperContract, BaseModule {
 
 contract AllowanceTest is Test, HelperContract, BaseModule, ERC20BaseModule {
     function setUp() public {
-        vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
-            OWNER,
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
+        CMTAT_CONTRACT = new CMTAT_STANDALONE(
+            ZERO_ADDRESS,
+            DEFAULT_ADMIN_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch");
+            "https://cmta.ch",
+            IRuleEngine(address(0)),
+            "CMTAT_info",
+            FLAG
+        );
     }
 
     // address1 -> address3
@@ -274,22 +284,26 @@ contract AllowanceTest is Test, HelperContract, BaseModule, ERC20BaseModule {
 
 contract TransferTest is Test, HelperContract, BaseModule, ERC20BaseModule {
     function setUp() public {
-        vm.prank(OWNER);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
-            OWNER,
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
+        CMTAT_CONTRACT = new CMTAT_STANDALONE(
+            ZERO_ADDRESS,
+            DEFAULT_ADMIN_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch");
-
+            "https://cmta.ch",
+            IRuleEngine(address(0)),
+            "CMTAT_info",
+            FLAG
+        );
         // Personal config
-        vm.prank(OWNER);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.mint(ADDRESS1, 31);
 
-        vm.prank(OWNER);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.mint(ADDRESS2, 32);
 
-        vm.prank(OWNER);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.mint(ADDRESS3, 33);
     }
 

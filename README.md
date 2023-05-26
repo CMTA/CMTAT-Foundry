@@ -1,10 +1,16 @@
 # CMTAT - using the Foundry suite
 
+> Warning:
+>
+> This repository is still under development.
+>
+> The majority of tests provided are not updated and are incomplete.
+
 This repository contains the configuration to manage CMTAT using the
 [Foundry](https://book.getfoundry.sh/) suite – If you use Truffle instead of Foundry, please see
 [CMTA/CMTAT-Truffle](https://github.com/CMTA/CMTAT-Truffle).
 
-The CMTAT contracts are included as a [submodule](CMTAT/) of the present repository. The current version used is the version [2.1](https://github.com/CMTA/CMTAT/releases/tag/2.1).
+The CMTAT contracts are included as a [submodule](CMTAT/) of the present repository. The current version used is the version [2.3](https://github.com/CMTA/CMTAT/releases/tag/2.3-Beta).
 
 ## Toolchain installation
 
