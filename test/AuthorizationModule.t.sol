@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import "forge-std/Test.sol";
 import "./HelperContract.sol";
 
+
 contract AuthorizationModuleTest is
     Test,
     HelperContract,
@@ -12,20 +13,25 @@ contract AuthorizationModuleTest is
 {
     bool resBool;
     function setUp() public {
-        vm.prank(ADMIN_ADDRESS);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
-            ADMIN_ADDRESS,
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
+        CMTAT_CONTRACT = new CMTAT_STANDALONE(
+            ZERO_ADDRESS,
+            DEFAULT_ADMIN_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch");
+            "https://cmta.ch",
+            IRuleEngine(address(0)),
+            "CMTAT_info",
+            FLAG
+        );
     }
 
     function testAdminCanGrantRole() public {
         // Act
         vm.expectEmit(true, true, false, true);
-        emit RoleGranted(PAUSER_ROLE, ADDRESS1, ADMIN_ADDRESS);
-        vm.prank(ADMIN_ADDRESS);
+        emit RoleGranted(PAUSER_ROLE, ADDRESS1, DEFAULT_ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.grantRole(PAUSER_ROLE, ADDRESS1);
         // Assert
         resBool = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
@@ -34,15 +40,15 @@ contract AuthorizationModuleTest is
 
     function testAdminCanRevokeRole() public {
         // Arrange
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.grantRole(PAUSER_ROLE, ADDRESS1);
         // Arrange - Assert
         resBool = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
         assertEq(resBool, true);
         // Act
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         vm.expectEmit(true, true, false, true);
-        emit RoleRevoked(PAUSER_ROLE, ADDRESS1, ADMIN_ADDRESS);
+        emit RoleRevoked(PAUSER_ROLE, ADDRESS1, DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.revokeRole(PAUSER_ROLE, ADDRESS1);
         // Assert
         resBool = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
@@ -74,7 +80,7 @@ contract AuthorizationModuleTest is
         // Arrange
         resBool = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);
         assertFalse(resBool);
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.grantRole(PAUSER_ROLE, ADDRESS1);
         // Arrange - Assert
         resBool = CMTAT_CONTRACT.hasRole(PAUSER_ROLE, ADDRESS1);

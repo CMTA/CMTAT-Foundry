@@ -3,34 +3,39 @@ pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
 import "../HelperContract.sol";
-import "CMTAT/mocks/RuleEngineMock.sol";
-import "./CodeList.sol";
+import "CMTAT/mocks/RuleEngine/RuleEngineMock.sol";
+import "./CodeListInternal.sol";
 // Transferring with Rule Engine set
-contract RuleEngineTransferTest is Test, HelperContract, ValidationModule, CodeList{
+contract RuleEngineTransferTest is Test, HelperContract, ValidationModule, CodeListInternal{
     RuleEngineMock ruleEngineMock;
     uint256 resUint256;
     uint8 resUint8;
     string resString;
 
     function setUp() public {
-        vm.prank(ADMIN_ADDRESS);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
-            ADMIN_ADDRESS,
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
+        CMTAT_CONTRACT = new CMTAT_STANDALONE(
+            ZERO_ADDRESS,
+            DEFAULT_ADMIN_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch");
+            "https://cmta.ch",
+            IRuleEngine(address(0)),
+            "CMTAT_info",
+            FLAG
+        );
 
         // Specific configuration for the tests
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         ruleEngineMock = new RuleEngineMock();
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.mint(ADDRESS1, 31);
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.mint(ADDRESS2, 32);
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.mint(ADDRESS3, 33);
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.setRuleEngine(ruleEngineMock);
     }
 

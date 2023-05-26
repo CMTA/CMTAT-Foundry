@@ -5,16 +5,22 @@ import "forge-std/Test.sol";
 import "./HelperContract.sol";
 
 contract PauseModuleTest is Test, HelperContract, PauseModule {
+    
     function setUp() public {
-        vm.prank(ADMIN_ADDRESS);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
-            ADMIN_ADDRESS,
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
+        CMTAT_CONTRACT = new CMTAT_STANDALONE(
+            ZERO_ADDRESS,
+            DEFAULT_ADMIN_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch");
+            "https://cmta.ch",
+            IRuleEngine(address(0)),
+            "CMTAT_info",
+            FLAG
+        );
         // Mint tokens to test the transfer
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.mint(ADDRESS1, 20);
     }
 
@@ -23,19 +29,19 @@ contract PauseModuleTest is Test, HelperContract, PauseModule {
     */
     function testCanBePausedByAdmin() public {
         // Act
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         vm.expectEmit(false, false, false, true);
-        emit Paused(ADMIN_ADDRESS);
+        emit Paused(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.pause();
         // Assert
         vm.prank(ADDRESS1);
-        vm.expectRevert(bytes("CMTAT: token transfer while paused"));
+        vm.expectRevert(bytes("CMTAT: transfer rejected by validation module"));
         CMTAT_CONTRACT.transfer(ADDRESS2, 10);
     }
 
     function testCanBePausedByANewPauser() public {
         // Arrange
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.grantRole(PAUSER_ROLE, ADDRESS1);
 
         // Assert
@@ -48,7 +54,7 @@ contract PauseModuleTest is Test, HelperContract, PauseModule {
 
         // Assert
         vm.prank(ADDRESS1);
-        vm.expectRevert(bytes("CMTAT: token transfer while paused"));
+        vm.expectRevert(bytes("CMTAT: transfer rejected by validation module"));
         CMTAT_CONTRACT.transfer(ADDRESS2, 10);
     }
 
@@ -70,15 +76,15 @@ contract PauseModuleTest is Test, HelperContract, PauseModule {
 
     function testCanBeUnpausedByAdmin() public {
         // Arrange
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.pause();
 
         // Assert
         vm.expectEmit(false, false, false, true);
-        emit Unpaused(ADMIN_ADDRESS);
+        emit Unpaused(DEFAULT_ADMIN_ADDRESS);
 
         // Act
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.unpause();
 
         // Assert
@@ -89,9 +95,9 @@ contract PauseModuleTest is Test, HelperContract, PauseModule {
 
     function testCanBeUnpausedByANewPauser() public {
         // Arrange
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.pause();
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.grantRole(PAUSER_ROLE, ADDRESS1);
 
         // Assert
@@ -110,7 +116,7 @@ contract PauseModuleTest is Test, HelperContract, PauseModule {
 
     function testCannotBeUnpausedByNonPauser() public {
         // Arrange
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.pause();
         // Assert
         string memory message = string(
@@ -130,7 +136,7 @@ contract PauseModuleTest is Test, HelperContract, PauseModule {
     // reverts if address1 transfers tokens to address2 when paused
     function testCannotTransferTokenWhenPaused_A() public {
         // Act
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.pause();
 
         // Assert
@@ -145,7 +151,7 @@ contract PauseModuleTest is Test, HelperContract, PauseModule {
         assertEq(res2, "All transfers paused");
 
         vm.prank(ADDRESS1);
-        vm.expectRevert(bytes("CMTAT: token transfer while paused"));
+        vm.expectRevert(bytes("CMTAT: transfer rejected by validation module"));
         CMTAT_CONTRACT.transfer(ADDRESS2, 10);
     }
 
@@ -157,7 +163,7 @@ contract PauseModuleTest is Test, HelperContract, PauseModule {
         CMTAT_CONTRACT.approve(ADDRESS3, 20);
 
         // Act
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.pause();
 
         // Assert
@@ -172,7 +178,7 @@ contract PauseModuleTest is Test, HelperContract, PauseModule {
         assertEq(res2, "All transfers paused");
 
         vm.prank(ADDRESS3);
-        vm.expectRevert(bytes("CMTAT: token transfer while paused"));
+        vm.expectRevert(bytes("CMTAT: transfer rejected by validation module"));
         CMTAT_CONTRACT.transferFrom(ADDRESS1, ADDRESS2, 10);
     }
 }

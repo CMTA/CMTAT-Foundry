@@ -6,13 +6,18 @@ import "./HelperContract.sol";
 
 contract MintModuleTest is Test, HelperContract, MintModule {
     function setUp() public {
-        vm.prank(ADMIN_ADDRESS);
-        CMTAT_CONTRACT = new CMTAT(ZERO_ADDRESS, false,
-            ADMIN_ADDRESS,
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
+        CMTAT_CONTRACT = new CMTAT_STANDALONE(
+            ZERO_ADDRESS,
+            DEFAULT_ADMIN_ADDRESS,
             "CMTA Token",
             "CMTAT",
             "CMTAT_ISIN",
-            "https://cmta.ch");
+            "https://cmta.ch",
+            IRuleEngine(address(0)),
+            "CMTAT_info",
+            FLAG
+        );
     }
 
     /**
@@ -21,12 +26,12 @@ contract MintModuleTest is Test, HelperContract, MintModule {
     function testCanBeMintedByAdmin() public {
         // Arrange - Assert
         // Check first balance
-        uint256 res1 = CMTAT_CONTRACT.balanceOf(ADMIN_ADDRESS);
+        uint256 res1 = CMTAT_CONTRACT.balanceOf(DEFAULT_ADMIN_ADDRESS);
         assertEq(res1, 0);
 
         // Act
         // Issue 20 and check balances and total supply
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         vm.expectEmit(true, true, false, true);
         emit Transfer(ZERO_ADDRESS, ADDRESS1, 20);
         vm.expectEmit(true, false, false, true);
@@ -49,7 +54,7 @@ contract MintModuleTest is Test, HelperContract, MintModule {
         emit Mint(ADDRESS2, 50);
         
         // Act
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.mint(ADDRESS2, 50);
 
         // Assert
@@ -62,11 +67,11 @@ contract MintModuleTest is Test, HelperContract, MintModule {
 
     function testCanBeMintedByANewMinter() public {
         // Arrange
-        vm.prank(ADMIN_ADDRESS);
+        vm.prank(DEFAULT_ADMIN_ADDRESS);
         CMTAT_CONTRACT.grantRole(MINTER_ROLE, ADDRESS1);
         // Arrange - Assert
         // Check first balance
-        uint256 res1 = CMTAT_CONTRACT.balanceOf(ADMIN_ADDRESS);
+        uint256 res1 = CMTAT_CONTRACT.balanceOf(DEFAULT_ADMIN_ADDRESS);
         assertEq(res1, 0);
 
         // Issue 20
