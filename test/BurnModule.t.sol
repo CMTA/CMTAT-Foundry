@@ -1,126 +1,176 @@
 //SPDX-License-Identifier: MPL-2.0
-pragma solidity ^0.8.17;
-import "./HelperContract.sol";
+pragma solidity ^0.8.20;
 
-contract BurnModuleTest is Test, HelperContract, BurnModule {
-    uint256 resUint256;
+import "./HelperContract.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+contract BurnModuleTest is HelperContract {
+    uint256 constant INITIAL_SUPPLY = 1000;
+
+    // Events from IERC7551Burn
+    event Burn(address indexed burner, address indexed account, uint256 value, bytes data);
 
     function setUp() public {
-        vm.prank(DEFAULT_ADMIN_ADDRESS);
-        CMTAT_CONTRACT = new CMTAT_STANDALONE(
-            ZERO_ADDRESS,
-            DEFAULT_ADMIN_ADDRESS,
-            "CMTA Token",
-            "CMTAT",
-            "CMTAT_ISIN",
-            "https://cmta.ch",
-            IRuleEngine(address(0)),
-            "CMTAT_info",
-            FLAG
-        );
-        vm.prank(DEFAULT_ADMIN_ADDRESS);
-        CMTAT_CONTRACT.mint(ADDRESS1, 50);
-        resUint256 = CMTAT_CONTRACT.totalSupply();
-        assertEq(resUint256, 50);
+        _deployToken();
+        // Mint initial tokens to USER1
+        vm.prank(ADMIN);
+        cmtat.mint(USER1, INITIAL_SUPPLY);
     }
 
-    /**
-    The admin is assigned the BURNER role when the contract is deployed
-    */
-    function testCanBeBurntByAdminWithAllowance() public {
-        // Arrange
-        vm.prank(ADDRESS1);
-        CMTAT_CONTRACT.approve(DEFAULT_ADMIN_ADDRESS, 50);
+    // ============ Basic Burn Tests ============
 
-        // Burn 20
-        // Assert
+    function test_AdminCanBurn() public {
+        uint256 burnAmount = 100;
+
+        // Verify initial state
+        assertEq(cmtat.balanceOf(USER1), INITIAL_SUPPLY);
+
+        // Admin burns tokens from USER1
+        vm.prank(ADMIN);
         vm.expectEmit(true, true, false, true);
-        emit Transfer(ADDRESS1, ZERO_ADDRESS, 20);
-        // TODO: add reason argument
-        //vm.expectEmit(true, false, false, true);
-        //emit Burn(ADDRESS1, 20);
-
-        // Act
-        vm.prank(DEFAULT_ADMIN_ADDRESS);
-        CMTAT_CONTRACT.forceBurn(ADDRESS1, 20, "");
-        
-        // Assert
-        // Check balances and total supply
-        resUint256 = CMTAT_CONTRACT.balanceOf(ADDRESS1);
-        assertEq(resUint256, 30);
-        resUint256 = CMTAT_CONTRACT.totalSupply();
-        assertEq(resUint256, 30);
-
-        // Burn 30
-        // Assert
+        emit IERC20.Transfer(USER1, ZERO_ADDRESS, burnAmount);
         vm.expectEmit(true, true, false, true);
-        emit Transfer(ADDRESS1, ZERO_ADDRESS, 30);
-        /*
-        // TODO: add reason argument
-        vm.expectEmit(true, false, false, true);
-        emit Burn(ADDRESS1, 30);
-        
-        */
+        emit Burn(ADMIN, USER1, burnAmount, "");
+        cmtat.burn(USER1, burnAmount);
 
-        // Act
-        vm.prank(DEFAULT_ADMIN_ADDRESS);
-        CMTAT_CONTRACT.forceBurn(ADDRESS1, 30, "");
-
-        // Assert
-        // check balances and total supply
-        resUint256 = CMTAT_CONTRACT.balanceOf(ADDRESS1);
-        assertEq(resUint256, 0);
-        resUint256 = CMTAT_CONTRACT.totalSupply();
-        assertEq(resUint256, 0);
+        // Verify results
+        assertEq(cmtat.balanceOf(USER1), INITIAL_SUPPLY - burnAmount);
+        assertEq(cmtat.totalSupply(), INITIAL_SUPPLY - burnAmount);
     }
 
-    function testCanBeBurntByBurnerRole() public {
-        // Arrange
-        vm.prank(DEFAULT_ADMIN_ADDRESS);
-        CMTAT_CONTRACT.grantRole(BURNER_ROLE, ADDRESS2);
-        vm.prank(ADDRESS1);
-        CMTAT_CONTRACT.approve(ADDRESS2, 50);
+    function test_BurnMultipleTimes() public {
+        // First burn
+        vm.prank(ADMIN);
+        cmtat.burn(USER1, 200);
+        assertEq(cmtat.balanceOf(USER1), 800);
+        assertEq(cmtat.totalSupply(), 800);
 
-        // Assert
+        // Second burn
+        vm.prank(ADMIN);
+        cmtat.burn(USER1, 300);
+        assertEq(cmtat.balanceOf(USER1), 500);
+        assertEq(cmtat.totalSupply(), 500);
+    }
+
+    function test_BurnWithData() public {
+        uint256 burnAmount = 100;
+        bytes memory data = "burn reason";
+
+        vm.prank(ADMIN);
         vm.expectEmit(true, true, false, true);
-        emit Transfer(ADDRESS1, ZERO_ADDRESS, 20);
-        /*
-        // TODO: add reason argument
-        vm.expectEmit(true, false, false, true);
-        emit Burn(ADDRESS1, 20);
-        */
-        // Act
-        vm.prank(ADDRESS2);
-        CMTAT_CONTRACT.forceBurn(ADDRESS1, 20, "");
+        emit Burn(ADMIN, USER1, burnAmount, data);
+        cmtat.burn(USER1, burnAmount, data);
 
-        // Assert
-        resUint256 = CMTAT_CONTRACT.balanceOf(ADDRESS1);
-        assertEq(resUint256, 30);
-        resUint256 = CMTAT_CONTRACT.totalSupply();
-        assertEq(resUint256, 30);
+        assertEq(cmtat.balanceOf(USER1), INITIAL_SUPPLY - burnAmount);
     }
 
-    function testCannotBeBurntIfBalanceExceeds() public {
-        // Assert
-        vm.expectRevert(bytes("ERC20: burn amount exceeds balance"));
-        // Act
-        vm.prank(DEFAULT_ADMIN_ADDRESS);
-        CMTAT_CONTRACT.forceBurn(ADDRESS1, 200, "");
+    function test_BurnEntireBalance() public {
+        vm.prank(ADMIN);
+        cmtat.burn(USER1, INITIAL_SUPPLY);
+
+        assertEq(cmtat.balanceOf(USER1), 0);
+        assertEq(cmtat.totalSupply(), 0);
     }
 
-    function testCannotBeBurntWithoutBurnerRole() public {
-        // Assert
-        string memory message = string(
-            abi.encodePacked(
-                "AccessControl: account ",
-                vm.toString(ADDRESS2),
-                " is missing role ",
-                BURNER_ROLE_HASH
-            )
-        );
-        vm.expectRevert(bytes(message));
-        // Act
-        vm.prank(ADDRESS2);
-        CMTAT_CONTRACT.forceBurn(ADDRESS1, 20, "");
+    // ============ Role-based Access Tests ============
+
+    function test_BurnerRoleCanBurn() public {
+        // Grant BURNER_ROLE to USER2
+        vm.prank(ADMIN);
+        cmtat.grantRole(BURNER_ROLE, USER2);
+
+        // USER2 can now burn from USER1
+        vm.prank(USER2);
+        cmtat.burn(USER1, 100);
+
+        assertEq(cmtat.balanceOf(USER1), INITIAL_SUPPLY - 100);
+    }
+
+    function test_RevertWhen_NonBurnerTriesToBurn() public {
+        // USER2 does not have burner role
+        vm.prank(USER2);
+        vm.expectRevert();
+        cmtat.burn(USER1, 100);
+    }
+
+    function test_RevokedBurnerCannotBurn() public {
+        // Grant and then revoke BURNER_ROLE
+        vm.prank(ADMIN);
+        cmtat.grantRole(BURNER_ROLE, USER2);
+
+        vm.prank(ADMIN);
+        cmtat.revokeRole(BURNER_ROLE, USER2);
+
+        // USER2 can no longer burn
+        vm.prank(USER2);
+        vm.expectRevert();
+        cmtat.burn(USER1, 100);
+    }
+
+    // ============ Batch Burn Tests ============
+
+    function test_BatchBurn() public {
+        // First mint tokens to multiple accounts
+        vm.prank(ADMIN);
+        cmtat.mint(USER2, 200);
+        vm.prank(ADMIN);
+        cmtat.mint(USER3, 300);
+
+        address[] memory accounts = new address[](3);
+        accounts[0] = USER1;
+        accounts[1] = USER2;
+        accounts[2] = USER3;
+
+        uint256[] memory values = new uint256[](3);
+        values[0] = 100;
+        values[1] = 50;
+        values[2] = 100;
+
+        uint256 totalSupplyBefore = cmtat.totalSupply();
+
+        vm.prank(ADMIN);
+        cmtat.batchBurn(accounts, values);
+
+        assertEq(cmtat.balanceOf(USER1), INITIAL_SUPPLY - 100);
+        assertEq(cmtat.balanceOf(USER2), 200 - 50);
+        assertEq(cmtat.balanceOf(USER3), 300 - 100);
+        assertEq(cmtat.totalSupply(), totalSupplyBefore - 250);
+    }
+
+    function test_RevertWhen_NonBurnerTriesBatchBurn() public {
+        address[] memory accounts = new address[](1);
+        accounts[0] = USER1;
+
+        uint256[] memory values = new uint256[](1);
+        values[0] = 100;
+
+        vm.prank(USER2);
+        vm.expectRevert();
+        cmtat.batchBurn(accounts, values);
+    }
+
+    // ============ Edge Cases ============
+
+    function test_BurnZeroAmount() public {
+        vm.prank(ADMIN);
+        cmtat.burn(USER1, 0);
+
+        assertEq(cmtat.balanceOf(USER1), INITIAL_SUPPLY);
+        assertEq(cmtat.totalSupply(), INITIAL_SUPPLY);
+    }
+
+    function test_RevertWhen_BurnExceedsBalance() public {
+        vm.prank(ADMIN);
+        vm.expectRevert();
+        cmtat.burn(USER1, INITIAL_SUPPLY + 1);
+    }
+
+    function test_RevertWhen_BurnFromAddressWithZeroBalance() public {
+        // USER2 has no tokens
+        assertEq(cmtat.balanceOf(USER2), 0);
+
+        vm.prank(ADMIN);
+        vm.expectRevert();
+        cmtat.burn(USER2, 1);
     }
 }

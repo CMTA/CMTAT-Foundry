@@ -1,2 +1,4 @@
-openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/
-CMTAT/=lib/CMTAT/contracts
+openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
+CMTAT/=lib/CMTAT/contracts/
+@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
+@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/

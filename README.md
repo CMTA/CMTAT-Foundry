@@ -1,99 +1,154 @@
-# CMTAT - using the Foundry suite
+# CMTAT - Foundry
 
-> Warning:
+> **Warning**
 >
-> This repository is still under development.
->
-> The majority of tests provided are not updated and are incomplete.
+> This repository is under active development. Tests are being updated and are incomplete.
 
-This repository contains the configuration to manage CMTAT using the
-[Foundry](https://book.getfoundry.sh/) suite – If you use Truffle instead of Foundry, please see
-[CMTA/CMTAT-Truffle](https://github.com/CMTA/CMTAT-Truffle).
+This repository provides a [Foundry](https://book.getfoundry.sh/) configuration for developing and testing [CMTAT](https://github.com/CMTA/CMTAT) smart contracts.
 
-The CMTAT contracts are included as a [submodule](CMTAT/) of the present repository. The current version used is the version [2.3]([https://github.com/CMTA/CMTAT/releases/tag/2.3-Beta](https://github.com/CMTA/CMTAT/releases/tag/v2.3.0)).
+For Hardhat-based development and full test suite, see the main [CMTAT repository](https://github.com/CMTA/CMTAT).
 
-## Toolchain installation
+**CMTAT Version:** [v3.2.0-rc0](https://github.com/CMTA/CMTAT/releases/tag/v3.0.0-rc0)
 
-To install the Foundry suite, please refer to the official instructions in the [Foundry book](https://book.getfoundry.sh/getting-started/installation).
-
-## Initialization
-
-You must first initialize the submodules, with
+## Project Structure
 
 ```
+CMTAT-Foundry/
+├── lib/
+│   ├── CMTAT/                    # CMTAT contracts (submodule)
+│   ├── forge-std/                # Foundry standard library
+│   ├── openzeppelin-contracts/   # OpenZeppelin contracts
+│   └── openzeppelin-contracts-upgradeable/
+├── test/                         # Foundry test files
+│   ├── HelperContract.sol        # Shared test utilities
+│   ├── BurnModule.t.sol          # Burn functionality tests
+│   ├── MintModule.t.sol          # Mint functionality tests
+│   ├── ERC20Module.t.sol         # ERC20 standard tests
+│   └── FreezeModule.t.sol        # Freeze functionality tests
+├── script/                       # Deployment scripts
+├── foundry.toml                  # Foundry configuration
+└── remappings.txt                # Import remappings
+```
+
+## Installation
+
+### Prerequisites
+
+Install the Foundry toolchain by following the [official instructions](https://book.getfoundry.sh/getting-started/installation).
+
+### Setup
+
+Clone the repository and initialize submodules:
+
+```bash
+git clone https://github.com/CMTA/CMTAT-Foundry.git
+cd CMTAT-Foundry
 forge install
 ```
 
-See also the command's [documentation](https://book.getfoundry.sh/reference/forge/forge-install).
+To update submodules later:
 
-Later you can update all the submodules with:
-
-```
+```bash
 forge update
 ```
 
-See also the command's [documentation](https://book.getfoundry.sh/reference/forge/forge-update).
+## Usage
 
+### Build
 
-## Compilation
+Compile all contracts:
 
-To compile the contracts, run
-
+```bash
+forge build
 ```
- forge build --contracts src/CMTAT.sol
-```
 
-See also the command's [documentation](https://book.getfoundry.sh/reference/forge/build-commands).
+### Test
 
+Run all tests:
 
-## Testing
-
-You can run the tests with
-
-```
+```bash
 forge test
 ```
 
-To run a specific test, use
+Run tests with verbosity for more details:
 
-```
-forge test --match-contract <contract name> --match-test <function name>
-```
-
-See also the test framework's [official documentation](https://book.getfoundry.sh/forge/tests), and that of the [test commands](https://book.getfoundry.sh/reference/forge/test-commands).
-
-
-## Local deployment
-
-With Foundry, you [can create a local testnet](https://book.getfoundry.sh/reference/anvil/) node for deploying and testing smart contracts, based on the [Anvil](https://anvil.works/) framework. 
-
-On Linux, using the default RPC URL, and Anvil's test private key, run:  
-
-```  
-export RPC_URL=http://127.0.0.1:8545`  
-export PRIVATE_KEY=<Local Private Key>
-forge create CMTAT --rpc-url=$RPC_URL --private-key=$PRIVATE_KEY
+```bash
+forge test -vvv
 ```
 
-See also the command's [documentation](https://book.getfoundry.sh/reference/forge/deploy-command).
+Run a specific test contract:
 
-
-## Code style guidelines
-
-We use the following tools to ensure consistent coding style:
-
-
-[Prettier](https://github.com/prettier-solidity/prettier-plugin-solidity):
-
-```
-npx prettier --write 'test/**/*.sol'
+```bash
+forge test --match-contract BurnModuleTest
 ```
 
-[Ethlint/ Solium](https://github.com/duaraghav8/Ethlint)
+Run a specific test function:
 
+```bash
+forge test --match-test test_AdminCanBurn
 ```
-npx solium -d test
+
+### Gas Reports
+
+Generate gas usage reports:
+
+```bash
+forge test --gas-report
 ```
 
-The related components can be installed with `npm install` (see [package.json](./package.json)). 
+### Coverage
 
+Generate test coverage report:
+
+```bash
+forge coverage
+```
+
+## Local Deployment
+
+Start a local Anvil node:
+
+```bash
+anvil
+```
+
+In a separate terminal, deploy the contract:
+
+```bash
+export RPC_URL=http://127.0.0.1:8545
+export PRIVATE_KEY=<your-private-key>
+forge create lib/CMTAT/contracts/deployment/CMTATStandalone.sol:CMTATStandalone \
+    --rpc-url=$RPC_URL \
+    --private-key=$PRIVATE_KEY
+```
+
+## Available Contracts
+
+The CMTAT library provides several deployment options:
+
+| Contract | Description |
+|----------|-------------|
+| `CMTATStandalone.sol` | Standard non-upgradeable deployment |
+| `CMTATUpgradeable.sol` | Transparent proxy upgradeable deployment |
+| `CMTATUpgradeableUUPS.sol` | UUPS proxy upgradeable deployment |
+
+See [CMTAT main repository](https://github.com/CMTA/CMTAT) for the whole list.
+
+## Code Style
+
+Format Solidity files with Foundry:
+
+```bash
+forge fmt
+```
+
+## Reference and Documentation
+
+- [Foundry Book](https://book.getfoundry.sh/)
+- [CMTAT GitHub](https://github.com/CMTA/CMTAT)
+- [forge-std Reference](https://book.getfoundry.sh/reference/forge-std/)
+- Tests have been made with the help of [Claude](https://claude.com/product/claude-code)
+
+## License
+
+This project is licensed under MPL-2.0.
