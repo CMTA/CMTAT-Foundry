@@ -1,30 +1,63 @@
 //SPDX-License-Identifier: MPL-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
-import "CMTAT/CMTAT_STANDALONE.sol";
-import "CMTAT/mocks/RuleEngine/interfaces/IRuleEngine.sol";
-abstract contract HelperContract {
-    uint256 FLAG = 5;
-    CMTAT_STANDALONE CMTAT_CONTRACT;
-    address constant ZERO_ADDRESS = address(0);
-    address constant DEFAULT_ADMIN_ADDRESS = address(1);
-    //address constant ADMIN_ADDRESS = address(5);
-    address constant ADDRESS1 = address(2);
-    address constant ADDRESS2 = address(3);
-    address constant ADDRESS3 = address(4);
-    string constant SNAPSHOOTER_ROLE_HASH =
-        "0x809a0fc49fc0600540f1d39e23454e1f6f215bc7505fa22b17c154616570ddef";
-    string constant BURNER_ROLE_HASH =
-        "0x3c11d16cbaffd01df69ce1c404f6340ee057498f5f00246190ea54220576a848"; //keccak256("BURNER_ROLE");
-    string constant MINTER_ROLE_HASH =
-        "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6"; //keccak256("MINTER_ROLE");
-    string constant ENFORCER_ROLE_HASH =
-        "0x973ef39d76cc2c6090feab1c030bec6ab5db557f64df047a4c4f9b5953cf1df3"; //keccak256("ENFORCER_ROLE");
-    string constant PAUSER_ROLE_HASH =
-        "0x65d7a28e3265b37a6474929f336521b332c1681b933f6cb9f3376673440d862a"; //keccak256("PAUSER_ROLE");
-    string constant DEFAULT_ADMIN_ROLE_HASH =
-        "0x0000000000000000000000000000000000000000000000000000000000000000";
+import "CMTAT/deployment/CMTATStandalone.sol";
+import "CMTAT/interfaces/technical/ICMTATConstructor.sol";
+import "CMTAT/interfaces/tokenization/draft-IERC1643CMTAT.sol";
 
-    constructor() {}
+abstract contract HelperContract is Test {
+    CMTATStandalone public cmtat;
+
+    // Addresses
+    address constant ZERO_ADDRESS = address(0);
+    address constant ADMIN = address(1);
+    address constant USER1 = address(2);
+    address constant USER2 = address(3);
+    address constant USER3 = address(4);
+
+    // Role hashes
+    bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
+    bytes32 public constant ENFORCER_ROLE = keccak256("ENFORCER_ROLE");
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+
+    // Token attributes
+    string constant TOKEN_NAME = "CMTA Token";
+    string constant TOKEN_SYMBOL = "CMTAT";
+    uint8 constant TOKEN_DECIMALS = 0;
+    string constant TOKEN_ID = "CMTAT_ISIN";
+    string constant TOKEN_TERMS_NAME = "Terms";
+    string constant TOKEN_TERMS_URI = "https://cmta.ch/terms";
+    bytes32 constant TOKEN_TERMS_HASH = bytes32(0);
+    string constant TOKEN_INFO = "CMTAT_info";
+
+    function _deployToken() internal {
+        // Create ERC20 attributes
+        ICMTATConstructor.ERC20Attributes memory erc20Attributes = ICMTATConstructor.ERC20Attributes({
+            name: TOKEN_NAME, symbol: TOKEN_SYMBOL, decimalsIrrevocable: TOKEN_DECIMALS
+        });
+
+        // Create document info for terms
+        IERC1643CMTAT.DocumentInfo memory termsDoc =
+            IERC1643CMTAT.DocumentInfo({name: TOKEN_TERMS_NAME, uri: TOKEN_TERMS_URI, documentHash: TOKEN_TERMS_HASH});
+
+        // Create extra information attributes
+        ICMTATConstructor.ExtraInformationAttributes memory extraInfoAttributes =
+            ICMTATConstructor.ExtraInformationAttributes({tokenId: TOKEN_ID, terms: termsDoc, information: TOKEN_INFO});
+
+        // Create engine struct (no rule engine for basic tests)
+        ICMTATConstructor.Engine memory engines = ICMTATConstructor.Engine({ruleEngine: IRuleEngine(ZERO_ADDRESS)});
+
+        // Deploy the contract
+        vm.prank(ADMIN);
+        cmtat = new CMTATStandalone(
+            ZERO_ADDRESS, // forwarderIrrevocable
+            ADMIN, // admin
+            erc20Attributes,
+            extraInfoAttributes,
+            engines
+        );
+    }
 }
