@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract BurnModuleTest is HelperContract {
     uint256 constant INITIAL_SUPPLY = 1000;
+    error CMTAT_BurnModule_EmptyAccounts();
+    error CMTAT_BurnModule_AccountsValueslengthMismatch();
 
     // Events from IERC7551Burn
     event Burn(address indexed burner, address indexed account, uint256 value, bytes data);
@@ -147,6 +149,55 @@ contract BurnModuleTest is HelperContract {
         vm.prank(USER2);
         vm.expectRevert();
         cmtat.batchBurn(accounts, values);
+    }
+
+    function test_RevertWhen_BatchBurnEmptyAccounts() public {
+        address[] memory accounts = new address[](0);
+        uint256[] memory values = new uint256[](0);
+
+        vm.prank(ADMIN);
+        vm.expectRevert(CMTAT_BurnModule_EmptyAccounts.selector);
+        cmtat.batchBurn(accounts, values);
+    }
+
+    function test_RevertWhen_BatchBurnArrayLengthMismatch() public {
+        address[] memory accounts = new address[](2);
+        accounts[0] = USER1;
+        accounts[1] = USER2;
+        uint256[] memory values = new uint256[](1);
+        values[0] = 100;
+
+        vm.prank(ADMIN);
+        vm.expectRevert(CMTAT_BurnModule_AccountsValueslengthMismatch.selector);
+        cmtat.batchBurn(accounts, values);
+    }
+
+    function test_RevertWhen_BatchBurnOneEntryInvalid_Atomicity() public {
+        vm.prank(ADMIN);
+        cmtat.mint(USER2, 50);
+
+        address[] memory accounts = new address[](3);
+        accounts[0] = USER1;
+        accounts[1] = USER2;
+        accounts[2] = USER3;
+
+        uint256[] memory values = new uint256[](3);
+        values[0] = 100;
+        values[1] = 25;
+        values[2] = 1;
+
+        uint256 user1Before = cmtat.balanceOf(USER1);
+        uint256 user2Before = cmtat.balanceOf(USER2);
+        uint256 totalSupplyBefore = cmtat.totalSupply();
+
+        vm.prank(ADMIN);
+        vm.expectRevert();
+        cmtat.batchBurn(accounts, values);
+
+        assertEq(cmtat.balanceOf(USER1), user1Before);
+        assertEq(cmtat.balanceOf(USER2), user2Before);
+        assertEq(cmtat.balanceOf(USER3), 0);
+        assertEq(cmtat.totalSupply(), totalSupplyBefore);
     }
 
     // ============ Edge Cases ============

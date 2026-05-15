@@ -6,6 +6,8 @@ import "./HelperContract.sol";
 contract MintModuleTest is HelperContract {
     // Events from IERC7551Mint
     event Mint(address indexed minter, address indexed account, uint256 value, bytes data);
+    error CMTAT_MintModule_EmptyAccounts();
+    error CMTAT_MintModule_AccountsValueslengthMismatch();
 
     function setUp() public {
         _deployToken();
@@ -134,6 +136,47 @@ contract MintModuleTest is HelperContract {
         vm.prank(USER1);
         vm.expectRevert();
         cmtat.batchMint(accounts, values);
+    }
+
+    function test_RevertWhen_BatchMintEmptyAccounts() public {
+        address[] memory accounts = new address[](0);
+        uint256[] memory values = new uint256[](0);
+
+        vm.prank(ADMIN);
+        vm.expectRevert(CMTAT_MintModule_EmptyAccounts.selector);
+        cmtat.batchMint(accounts, values);
+    }
+
+    function test_RevertWhen_BatchMintArrayLengthMismatch() public {
+        address[] memory accounts = new address[](2);
+        accounts[0] = USER1;
+        accounts[1] = USER2;
+        uint256[] memory values = new uint256[](1);
+        values[0] = 100;
+
+        vm.prank(ADMIN);
+        vm.expectRevert(CMTAT_MintModule_AccountsValueslengthMismatch.selector);
+        cmtat.batchMint(accounts, values);
+    }
+
+    function test_RevertWhen_BatchMintHasInvalidEntry_Atomicity() public {
+        address[] memory accounts = new address[](3);
+        accounts[0] = USER1;
+        accounts[1] = ZERO_ADDRESS;
+        accounts[2] = USER3;
+
+        uint256[] memory values = new uint256[](3);
+        values[0] = 100;
+        values[1] = 200;
+        values[2] = 300;
+
+        vm.prank(ADMIN);
+        vm.expectRevert();
+        cmtat.batchMint(accounts, values);
+
+        assertEq(cmtat.balanceOf(USER1), 0);
+        assertEq(cmtat.balanceOf(USER3), 0);
+        assertEq(cmtat.totalSupply(), 0);
     }
 
     // ============ Edge Cases ============

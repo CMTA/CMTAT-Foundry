@@ -5,6 +5,8 @@ import "./HelperContract.sol";
 
 contract FreezeModuleTest is HelperContract {
     uint256 constant INITIAL_SUPPLY = 1000;
+    error CMTAT_Enforcement_EmptyAccounts();
+    error CMTAT_Enforcement_AccountsValueslengthMismatch();
 
     // Events from IERC3643EnforcementEvent
     event AddressFrozen(address indexed account, bool indexed isFrozen, address indexed enforcer, bytes data);
@@ -260,6 +262,27 @@ contract FreezeModuleTest is HelperContract {
 
         vm.prank(USER3);
         vm.expectRevert();
+        cmtat.batchSetAddressFrozen(accounts, freezes);
+    }
+
+    function test_RevertWhen_BatchFreezeEmptyAccounts() public {
+        address[] memory accounts = new address[](0);
+        bool[] memory freezes = new bool[](0);
+
+        vm.prank(ADMIN);
+        vm.expectRevert(CMTAT_Enforcement_EmptyAccounts.selector);
+        cmtat.batchSetAddressFrozen(accounts, freezes);
+    }
+
+    function test_RevertWhen_BatchFreezeArrayLengthMismatch() public {
+        address[] memory accounts = new address[](2);
+        accounts[0] = USER1;
+        accounts[1] = USER2;
+        bool[] memory freezes = new bool[](1);
+        freezes[0] = true;
+
+        vm.prank(ADMIN);
+        vm.expectRevert(CMTAT_Enforcement_AccountsValueslengthMismatch.selector);
         cmtat.batchSetAddressFrozen(accounts, freezes);
     }
 
