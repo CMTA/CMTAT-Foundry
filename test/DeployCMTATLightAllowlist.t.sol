@@ -47,6 +47,14 @@ contract DeployCMTATLightVersionsTest is DeploymentTestBase {
         _assertCoreMetadata(address(cmtat), "CMTA Token", "CMTAT", 0);
         _assertAdminRole(address(cmtat));
     }
+
+    function test_RevertWhen_DeployLightWithZeroAdmin() public {
+        vm.expectRevert();
+        standaloneDeployer.deploy(address(0), "N", "S", 0);
+
+        vm.expectRevert();
+        proxyDeployer.deploy(address(0), "N", "S", 0);
+    }
 }
 
 contract DeployCMTATAllowlistVersionsTest is DeploymentTestBase {
@@ -95,5 +103,13 @@ contract DeployCMTATAllowlistVersionsTest is DeploymentTestBase {
         );
         _assertAllowlistMetadata(address(cmtat));
         assertTrue(cmtat.isTrustedForwarder(FORWARDER));
+    }
+
+    function test_RevertWhen_DeployAllowlistWithZeroAdmin() public {
+        vm.expectRevert();
+        standaloneDeployer.deploy(address(0), FORWARDER, "N", "S", 0, "ID", "T", "U", "I");
+
+        vm.expectRevert();
+        proxyDeployer.deploy(address(0), FORWARDER, "N", "S", 0, "ID", "T", "U", "I");
     }
 }

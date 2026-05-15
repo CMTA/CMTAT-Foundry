@@ -57,6 +57,14 @@ contract DeployCMTATDebtVersionsTest is DeployDebtBase {
         );
         _assertCommon(address(cmtat));
     }
+
+    function test_RevertWhen_DeployDebtWithZeroAdmin() public {
+        vm.expectRevert();
+        standaloneDeployer.deploy(address(0), "N", "S", 0, "ID", "T", "U", "I");
+
+        vm.expectRevert();
+        proxyDeployer.deploy(address(0), "N", "S", 0, "ID", "T", "U", "I");
+    }
 }
 
 contract DeployCMTATDebtEngineVersionsTest is DeployDebtBase {
@@ -96,5 +104,13 @@ contract DeployCMTATDebtEngineVersionsTest is DeployDebtBase {
         );
         _assertCommon(address(cmtat));
         assertEq(address(cmtat.debtEngine()), address(0));
+    }
+
+    function test_RevertWhen_DeployDebtEngineWithZeroAdmin() public {
+        vm.expectRevert();
+        standaloneDeployer.deploy(address(0), "N", "S", 0, "ID", "T", "U", "I");
+
+        vm.expectRevert();
+        proxyDeployer.deploy(address(0), "N", "S", 0, "ID", "T", "U", "I");
     }
 }

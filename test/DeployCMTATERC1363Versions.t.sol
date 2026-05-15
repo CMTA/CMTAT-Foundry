@@ -81,4 +81,12 @@ contract DeployCMTATERC1363VersionsTest is DeployERC1363Base {
         assertTrue(cmtat.isTrustedForwarder(FORWARDER));
         _assertTransferAndCall(address(cmtat));
     }
+
+    function test_RevertWhen_DeployERC1363WithZeroAdmin() public {
+        vm.expectRevert();
+        standaloneDeployer.deploy(address(0), FORWARDER, "N", "S", 0, "ID", "T", "U", "I");
+
+        vm.expectRevert();
+        proxyDeployer.deploy(address(0), FORWARDER, "N", "S", 0, "ID", "T", "U", "I");
+    }
 }
