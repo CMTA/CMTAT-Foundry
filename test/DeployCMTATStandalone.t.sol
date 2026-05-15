@@ -135,4 +135,48 @@ contract DeployCMTATStandaloneTest is Test {
 
         assertFalse(cmtat.paused());
     }
+
+    function test_Run_UsesEnvironmentOverrides() public {
+        address envAdmin = address(0xA11CE);
+        address envForwarder = address(0xF0);
+        vm.setEnv("ADMIN_ADDRESS", vm.toString(envAdmin));
+        vm.setEnv("FORWARDER_ADDRESS", vm.toString(envForwarder));
+        vm.setEnv("TOKEN_NAME", "Env Token");
+        vm.setEnv("TOKEN_SYMBOL", "ENV");
+        vm.setEnv("TOKEN_DECIMALS", "6");
+        vm.setEnv("TOKEN_ID", "ENV_ID");
+        vm.setEnv("TERMS_NAME", "Env Terms");
+        vm.setEnv("TERMS_URI", "https://env.example/terms");
+        vm.setEnv("TOKEN_INFO", "env-info");
+
+        CMTATStandalone cmtat = deployer.run();
+
+        assertEq(cmtat.name(), "Env Token");
+        assertEq(cmtat.symbol(), "ENV");
+        assertEq(cmtat.decimals(), 6);
+        assertEq(cmtat.tokenId(), "ENV_ID");
+        assertEq(cmtat.information(), "env-info");
+        assertTrue(cmtat.hasRole(DEFAULT_ADMIN_ROLE, envAdmin));
+        assertTrue(cmtat.isTrustedForwarder(envForwarder));
+    }
+
+    function test_Run_UsesProvidedAdminEnvDeterministically() public {
+        address envAdmin = address(0xCA11E2);
+        vm.setEnv("ADMIN_ADDRESS", vm.toString(envAdmin));
+        vm.setEnv("FORWARDER_ADDRESS", vm.toString(FORWARDER));
+        vm.setEnv("TOKEN_NAME", "Sender Token");
+        vm.setEnv("TOKEN_SYMBOL", "SND");
+        vm.setEnv("TOKEN_DECIMALS", "4");
+        vm.setEnv("TOKEN_ID", "SND_ID");
+        vm.setEnv("TERMS_NAME", "Sender Terms");
+        vm.setEnv("TERMS_URI", "https://sender.example/terms");
+        vm.setEnv("TOKEN_INFO", "sender-info");
+
+        CMTATStandalone cmtat = deployer.run();
+
+        assertTrue(cmtat.hasRole(DEFAULT_ADMIN_ROLE, envAdmin));
+        assertEq(cmtat.name(), "Sender Token");
+        assertEq(cmtat.symbol(), "SND");
+        assertEq(cmtat.decimals(), 4);
+    }
 }
