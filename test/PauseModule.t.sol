@@ -5,6 +5,7 @@ import "./HelperContract.sol";
 
 contract PauseModuleTest is HelperContract {
     bytes32 public constant CROSS_CHAIN_ROLE = keccak256("CROSS_CHAIN_ROLE");
+    error CMTAT_PauseModule_ContractIsDeactivated();
 
     function setUp() public {
         _deployToken();
@@ -80,5 +81,24 @@ contract PauseModuleTest is HelperContract {
         vm.prank(USER2);
         cmtat.crosschainMint(USER3, 5);
         assertEq(cmtat.balanceOf(USER3), 5);
+    }
+
+    function test_RevertWhen_DeactivateWithoutPause() public {
+        vm.prank(ADMIN);
+        vm.expectRevert();
+        cmtat.deactivateContract();
+    }
+
+    function test_DeactivateThenUnpauseRevertsAndReadPathShowsDeactivated() public {
+        vm.startPrank(ADMIN);
+        cmtat.pause();
+        cmtat.deactivateContract();
+        vm.expectRevert(CMTAT_PauseModule_ContractIsDeactivated.selector);
+        cmtat.unpause();
+        vm.stopPrank();
+
+        assertTrue(cmtat.deactivated());
+        assertEq(cmtat.detectTransferRestriction(USER1, USER2, 10), 1);
+        assertFalse(cmtat.canTransfer(USER1, USER2, 10));
     }
 }
