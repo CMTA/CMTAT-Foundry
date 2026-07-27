@@ -7,6 +7,12 @@
 > added, always provide a **one-line GitHub commit message** (Conventional-Commits
 > style, e.g. `feat: ...`, `fix: ...`, `docs: ...`, `refactor: ...`, `test: ...`).
 
+> **Note — test inventory:** [`TEST.md`](TEST.md) lists **every** test in the repository.
+> Whenever a test is **added, renamed, changed in purpose, or removed**, update `TEST.md`
+> in the same commit: the row for that test, the per-file count in its section heading,
+> the file's row in the summary table, and the totals at the top (tests / contracts / files).
+> A new test file also needs its own section and a summary-table row.
+
 ## What this project is
 
 A [Foundry](https://book.getfoundry.sh/) workspace for developing, deploying and testing
@@ -124,6 +130,8 @@ test/
 - `remappings.txt` — `CMTAT/` → `lib/CMTAT/contracts/`, `@openzeppelin/contracts/`,
   `@openzeppelin/contracts-upgradeable/`, `openzeppelin-contracts-upgradeable/`.
 - `foundry.lock` / `.gitmodules` — pinned submodule revisions and their upstream URLs.
+- `TEST.md` — inventory of every test in `test/`, per file, with counts. Must be updated with any
+  test change.
 - `CHANGELOG.md` — keep-a-changelog format; current version **0.2.0**.
 - `README.md` — install, usage, local Anvil deployment.
 - `.claude/skills/{cmtat,foundry}/SKILL.md` — project-local skills for CMTAT and Foundry.
@@ -165,9 +173,12 @@ Local deployment: run `anvil`, then
   `pragma solidity ^0.8.20;`.
 - **Naming.** Scripts `DeployCMTAT<Variant>.s.sol` / `DeployCMTAT<Variant>Proxy.s.sol`; tests
   `<Subject>.t.sol`; test functions `test_<Behaviour>`, fuzz `testFuzz_<Behaviour>`; mocks `Mock*.sol`.
+- **Every test change updates `TEST.md`** (see the note at the top) — it is the inventory of the
+  whole suite and goes stale silently otherwise.
 - **New variant checklist:** add the script (inheriting `CMTATDeployScriptBase`), add or extend the
   matching `test/Deploy*.t.sol` using `deploy(...)`, add a section to the single env test in
-  `test/DeployEnvOverrides.t.sol`, assert the zero-admin revert, and update `CHANGELOG.md`.
+  `test/DeployEnvOverrides.t.sol`, assert the zero-admin revert, record the tests in `TEST.md`, and
+  update `CHANGELOG.md`.
 - **Keep scripts DRY** — put anything shared by two or more scripts into `CMTATDeployScriptBase.sol`.
 - **`forge fmt` before committing**, and make sure `forge build` and `forge test` are green.
 - **Versioning** follows keep-a-changelog + semver in `CHANGELOG.md`.

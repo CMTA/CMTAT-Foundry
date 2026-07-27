@@ -74,6 +74,9 @@ forge build
 
 ### Test
 
+See **[TEST.md](TEST.md)** for the full inventory of the test suite: every test file, what each test
+asserts, and the per-area counts.
+
 Run all tests:
 
 ```bash
