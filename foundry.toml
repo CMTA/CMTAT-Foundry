@@ -7,3 +7,9 @@ optimizer = true
 optimizer_runs = 200
 evm_version = 'prague'
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
+
+# Used by the CI workflow (FOUNDRY_PROFILE=ci). Profiles inherit from `default`, so this only
+# overrides what CI does differently. The section must exist: recent Foundry versions fail with
+# "selected profile `ci` does not exist" instead of falling back to the default profile.
+[profile.ci]
+fuzz = { runs = 1000 }

@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import "./HelperContract.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "CMTAT/interfaces/technical/IERC20Allowance.sol";
 
 contract ERC20ModuleTest is HelperContract {
     uint256 constant INITIAL_SUPPLY = 1000;
@@ -179,5 +180,36 @@ contract ERC20ModuleTest is HelperContract {
         vm.prank(USER2);
         vm.expectRevert();
         cmtat.transferFrom(USER1, USER3, 100);
+    }
+
+    // ============ Allowance / Spend Event Tests ============
+
+    function test_TransferFromEmitsSpendAndReducesAllowance() public {
+        vm.prank(USER1);
+        cmtat.approve(USER2, 100);
+
+        vm.expectEmit(true, true, true, true);
+        emit IERC20Allowance.Spend(USER1, USER2, 40);
+
+        vm.prank(USER2);
+        cmtat.transferFrom(USER1, USER3, 40);
+        assertEq(cmtat.allowance(USER1, USER2), 60);
+    }
+
+    /// @dev CMTAT v3.2.0 documents that `Spend` does not imply an allowance reduction: with an
+    ///      infinite approval OpenZeppelin leaves the allowance untouched, yet the event is still
+    ///      emitted. Integrators must not track allowances from `Spend` alone.
+    function test_InfiniteAllowanceIsNotReducedButStillEmitsSpend() public {
+        vm.prank(USER1);
+        cmtat.approve(USER2, type(uint256).max);
+
+        vm.expectEmit(true, true, true, true);
+        emit IERC20Allowance.Spend(USER1, USER2, 100);
+
+        vm.prank(USER2);
+        cmtat.transferFrom(USER1, USER3, 100);
+
+        assertEq(cmtat.allowance(USER1, USER2), type(uint256).max);
+        assertEq(cmtat.balanceOf(USER3), 100);
     }
 }

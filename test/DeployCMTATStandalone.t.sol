@@ -135,4 +135,7 @@ contract DeployCMTATStandaloneTest is Test {
 
         assertFalse(cmtat.paused());
     }
+
+    /// @dev The env-driven `run()` path is covered in `DeployEnvOverrides.t.sol`: `vm.setEnv` is
+    ///      process-global and forge runs test cases in parallel, so it must stay in one place.
 }

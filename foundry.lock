@@ -1,7 +1,7 @@
 {
   "lib/CMTAT": {
-    "name": "v3.2.0-rc0",
-    "rev": "66f37fafb242263deddd5c47629ddd77f994f51e"
+    "name": "v3.2.0",
+    "rev": "49544f4de1993008acfc9e848d0bf03bd31d8579"
   },
   "lib/forge-std": {
     "name": "v1.5.1",
