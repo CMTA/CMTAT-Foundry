@@ -2,7 +2,7 @@
 
 > **Warning**
 >
-> This repository is under active development. Tests are being updated and are incomplete.
+> This repository is under active development. Tests are being updated and may be incomplete.
 
 This repository provides a [Foundry](https://book.getfoundry.sh/) configuration for developing and testing [CMTAT](https://github.com/CMTA/CMTAT) smart contracts.
 
