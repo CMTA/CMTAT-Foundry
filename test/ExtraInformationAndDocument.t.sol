@@ -44,7 +44,9 @@ contract ExtraInformationAndDocumentTest is HelperContract {
     function test_RevertWhen_NonExtraInformationRoleTriesToSetData() public {
         vm.prank(USER1);
         vm.expectRevert(
-            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, USER1, EXTRA_INFORMATION_ROLE)
+            abi.encodeWithSelector(
+                IAccessControl.AccessControlUnauthorizedAccount.selector, USER1, EXTRA_INFORMATION_ROLE
+            )
         );
         cmtat.setTokenId("X");
     }

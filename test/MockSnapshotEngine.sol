@@ -11,7 +11,9 @@ contract MockSnapshotEngine is ISnapshotEngine {
     uint256 public lastBalanceTo;
     uint256 public lastTotalSupply;
 
-    function operateOnTransfer(address from, address to, uint256 balanceFrom, uint256 balanceTo, uint256 totalSupply) external {
+    function operateOnTransfer(address from, address to, uint256 balanceFrom, uint256 balanceTo, uint256 totalSupply)
+        external
+    {
         calls += 1;
         lastFrom = from;
         lastTo = to;

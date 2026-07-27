@@ -41,8 +41,14 @@ The token contracts themselves are **not** in this repo — they come from the `
   and `ICMTATConstructor.Engine` (rule engine, `address(0)` by default). Light variants take only
   `ERC20Attributes`.
 - **Access control.** `DEFAULT_ADMIN_ROLE` = `0x00`; other roles are `keccak256("...")`:
-  `MINTER_ROLE`, `BURNER_ROLE`, `ENFORCER_ROLE`, `PAUSER_ROLE`, `ERC20ENFORCER_ROLE`.
-  Constructors/initializers revert if admin is `address(0)` — tests assert this.
+  `MINTER_ROLE`, `BURNER_ROLE`, `ENFORCER_ROLE`, `PAUSER_ROLE`, `ERC20ENFORCER_ROLE`,
+  `ALLOWLIST_ROLE`, `DEBT_ROLE`, `DEBT_ENGINE_ROLE`, `EXTRA_INFORMATION_ROLE`, `PROXY_UPGRADE_ROLE`.
+  `AccessControlModule.hasRole` is overridden so the **default admin implicitly holds every role** —
+  negative role tests must therefore use a non-admin account. Constructors/initializers revert if
+  admin is `address(0)` — tests assert this.
+- **Allowlist is enabled at initialization** and nobody, not even the admin, is on it: a freshly
+  deployed allowlist variant rejects every transfer and mint with `ERC7943CannotTransact(account)`
+  until addresses are added via `setAddressAllowlist`.
 - **Meta-transactions.** ERC-2771: the trusted forwarder is an **immutable constructor** argument
   (`forwarderIrrevocable`), never an initializer argument, including on upgradeable variants.
 - **Test convention.** Tests inherit `test/HelperContract.sol` (fixed `ADMIN`/`USER1..3` addresses,
@@ -89,7 +95,15 @@ test/
 ├── RuleEngineIntegration.t.sol               # rule engine hook integration
 ├── ExtraInformationAndDocument.t.sol         # tokenId / terms / ERC-1643 documents
 ├── ERC2771Module.t.sol                       # trusted forwarder / meta-tx
+├── CCIPModule.t.sol                          # CCIP admin (Chainlink CCT registration)
 ├── FuzzInvariant.t.sol                       # fuzz + invariant tests
+├── AllowlistModule.t.sol                     # allowlist variant: transfer/mint/burn gating
+├── DebtModule.t.sol                          # debt variant: debt, instrument, credit events
+├── DebtEngineModule.t.sol                    # debtEngine variant: read-through to an engine
+├── ERC1363Module.t.sol                       # ERC-1363 variant: transfer/approveAndCall
+├── ERC7551Module.t.sol                       # ERC-7551 variant: metadata + terms(hash, uri)
+├── LightVariant.t.sol                        # light variant: core modules kept, version()
+├── UUPSUpgrade.t.sol                         # upgrade authorization + state preservation
 ├── DeployCMTATStandalone.t.sol               # base standalone script
 ├── DeployCMTATUpgradeableProxy.t.sol         # base proxy + UUPS scripts
 ├── DeployCMTATLightAllowlist.t.sol           # light & allowlist scripts
@@ -100,6 +114,7 @@ test/
 ├── MockRuleEngine.sol                        # mocks used by the suites
 ├── MockDocumentEngine.sol
 ├── MockSnapshotEngine.sol
+├── MockERC1363.sol                           # ERC-1363 receiver / rejecting receiver / spender
 └── MockTrustedForwarder.sol
 ```
 

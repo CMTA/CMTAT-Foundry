@@ -34,7 +34,10 @@ contract DeployCMTATLightVersionsTest is DeploymentTestBase {
 
     function test_DeployStandaloneLight_Defaults() public {
         CMTATStandaloneLight cmtat = standaloneDeployer.deploy(
-            ADMIN, standaloneDeployer.DEFAULT_NAME(), standaloneDeployer.DEFAULT_SYMBOL(), standaloneDeployer.DEFAULT_DECIMALS()
+            ADMIN,
+            standaloneDeployer.DEFAULT_NAME(),
+            standaloneDeployer.DEFAULT_SYMBOL(),
+            standaloneDeployer.DEFAULT_DECIMALS()
         );
         _assertCoreMetadata(address(cmtat), "CMTA Token", "CMTAT", 0);
         _assertAdminRole(address(cmtat));
