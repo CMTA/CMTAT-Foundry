@@ -28,8 +28,12 @@ Reference: [keepachangelog.com/en/1.1.0/](https://keepachangelog.com/en/1.1.0/)
 
 ### Changed
 
-- Updated CMTAT submodule to [v3.2.0-rc0](https://github.com/CMTA/CMTAT/releases/tag/v3.2.0-rc0)
-- Improved README.md with project structure, usage examples, and documentation links
+- Updated CMTAT submodule to [v3.2.0](https://github.com/CMTA/CMTAT/releases/tag/v3.2.0) (previously
+  the release candidate [v3.2.0-rc0](https://github.com/CMTA/CMTAT/releases/tag/v3.2.0-rc0));
+  `foundry.lock` now pins the final tag. No repository change was required: the whole suite passes
+  against v3.2.0 unmodified
+- Improved README.md with project structure, usage examples, and documentation links, and added a
+  release table mapping each CMTAT-Foundry release to its CMTAT version
 
 ## 0.1.0 - 2025-08-28 Initial Foundry Setup
 

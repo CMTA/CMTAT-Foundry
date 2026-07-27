@@ -12,7 +12,7 @@
 A [Foundry](https://book.getfoundry.sh/) workspace for developing, deploying and testing
 [CMTAT](https://github.com/CMTA/CMTAT) (Capital Markets and Technology Association Token) contracts.
 The token contracts themselves are **not** in this repo — they come from the `lib/CMTAT` submodule
-(pinned to **v3.2.0-rc0**). This repo only contains Foundry **deployment scripts** (`script/`) and a
+(pinned to **v3.2.0**). This repo only contains Foundry **deployment scripts** (`script/`) and a
 **test suite** (`test/`). The reference Hardhat suite lives in the upstream CMTAT repository.
 
 ## Key concepts
@@ -133,7 +133,7 @@ test/
 
 | Submodule | Version |
 |---|---|
-| `lib/CMTAT` | v3.2.0-rc0 |
+| `lib/CMTAT` | v3.2.0 |
 | `lib/forge-std` | v1.5.1 |
 | `lib/openzeppelin-contracts` | v5.5.0 |
 | `lib/openzeppelin-contracts-upgradeable` | v5.5.0 |

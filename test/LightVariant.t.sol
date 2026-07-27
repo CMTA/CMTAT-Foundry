@@ -32,6 +32,14 @@ contract LightVariantTest is Test {
         assertEq(cmtat.version(), "3.2.0");
     }
 
+    /// @dev The core variant deliberately does not implement ERC-7943 in its entirety, so unlike
+    ///      the full token it must not advertise `0x29388973`.
+    function test_DoesNotAdvertiseERC7943() public {
+        assertTrue(cmtat.supportsInterface(0xd0017968)); // ERC-5679 (mint/burn)
+        assertTrue(cmtat.supportsInterface(0x01ffc9a7)); // ERC-165
+        assertFalse(cmtat.supportsInterface(0x29388973)); // ERC-7943
+    }
+
     function test_CoreERC20FlowsWork() public {
         vm.prank(USER1);
         cmtat.transfer(USER2, 300);

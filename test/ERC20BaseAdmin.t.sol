@@ -17,6 +17,11 @@ contract ERC20BaseAdminTest is HelperContract {
         vm.stopPrank();
     }
 
+    /// @dev Pins the CMTAT release this repository is built against; bump it with the submodule.
+    function test_VersionMatchesTheExpectedCMTATRelease() public {
+        assertEq(cmtat.version(), "3.2.0");
+    }
+
     function test_AdminCanSetNameAndEmitsEvent() public {
         vm.prank(ADMIN);
         vm.expectEmit(true, false, false, true);

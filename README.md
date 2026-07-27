@@ -8,7 +8,17 @@ This repository provides a [Foundry](https://book.getfoundry.sh/) configuration 
 
 For Hardhat-based development and full test suite, see the main [CMTAT repository](https://github.com/CMTA/CMTAT).
 
-**CMTAT Version:** [v3.2.0-rc0](https://github.com/CMTA/CMTAT/releases/tag/v3.0.0-rc0)
+## Releases
+
+Which CMTAT version each release of this repository is built and tested against:
+
+| CMTAT-Foundry | CMTAT | Status |
+|---------------|-------|--------|
+| v0.2.0 | [v3.2.0](https://github.com/CMTA/CMTAT/releases/tag/v3.2.0) | current |
+| v0.1.0 | [v2.3.0](https://github.com/CMTA/CMTAT/releases/tag/v2.3.0) | previous |
+
+The CMTAT version is pinned by the `lib/CMTAT` submodule (see `foundry.lock`); see the
+[CHANGELOG](CHANGELOG.md) for the full history.
 
 ## Project Structure
 

@@ -29,6 +29,9 @@ contract ERC20CrossChainComprehensiveTest is HelperContract {
         assertTrue(cmtat.supportsInterface(type(IERC7802).interfaceId));
         assertTrue(cmtat.supportsInterface(0x01ffc9a7));
         assertFalse(cmtat.supportsInterface(0x80ac58cd));
+        // the full token advertises ERC-5679 and ERC-7943; the light/core variant only ERC-5679
+        assertTrue(cmtat.supportsInterface(0xd0017968));
+        assertTrue(cmtat.supportsInterface(0x29388973));
     }
 
     function test_CrosschainMintAndBurnEmitExpectedEvents() public {
