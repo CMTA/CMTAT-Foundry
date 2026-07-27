@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 Reference: [keepachangelog.com/en/1.1.0/](https://keepachangelog.com/en/1.1.0/)
 
-## 0.2.0
+## v0.2.0
 
 ### Added
 
@@ -35,7 +35,7 @@ Reference: [keepachangelog.com/en/1.1.0/](https://keepachangelog.com/en/1.1.0/)
 - Improved README.md with project structure, usage examples, and documentation links, and added a
   release table mapping each CMTAT-Foundry release to its CMTAT version
 
-## 0.1.0 - 2025-08-28 Initial Foundry Setup
+## v0.1.0 - 2025-08-28 Initial Foundry Setup
 
 Commit: `c89d23a738fb7fd7ad44aedd3fa9dfa4faea5f21`
 
