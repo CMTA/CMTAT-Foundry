@@ -81,6 +81,29 @@ contract ERC20CrossChainComprehensiveTest is HelperContract {
         cmtat.crosschainBurn(USER1, 1);
     }
 
+    function test_RevertWhen_CrosschainMintToFrozenAddress() public {
+        vm.prank(ADMIN);
+        cmtat.setAddressFrozen(USER3, true);
+
+        vm.prank(USER2);
+        vm.expectRevert();
+        cmtat.crosschainMint(USER3, 1);
+
+        assertEq(cmtat.balanceOf(USER3), 0);
+    }
+
+    /// @dev A bridge holding `CROSS_CHAIN_ROLE` burns without an ERC-20 allowance — that is the
+    ///      point of the role, and why it must be granted only to trusted bridges.
+    function test_CrosschainBurnNeedsNoAllowance() public {
+        uint256 balanceBefore = cmtat.balanceOf(USER1);
+        assertEq(cmtat.allowance(USER1, USER2), 0);
+
+        vm.prank(USER2);
+        cmtat.crosschainBurn(USER1, 10);
+
+        assertEq(cmtat.balanceOf(USER1), balanceBefore - 10);
+    }
+
     function test_RevertWhen_CrosschainBurnWhilePaused() public {
         vm.prank(ADMIN);
         cmtat.pause();

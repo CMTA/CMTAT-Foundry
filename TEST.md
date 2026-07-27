@@ -1,6 +1,6 @@
 # Test Suite
 
-Complete inventory of the tests in this repository: **230 tests**, in **33 test contracts**, across
+Complete inventory of the tests in this repository: **260 tests**, in **33 test contracts**, across
 **29 files** in `test/`, run against **CMTAT v3.2.0** (`lib/CMTAT` submodule).
 
 > **Keep this file up to date.** Any test added, renamed, changed in purpose, or removed must be
@@ -28,22 +28,22 @@ forge test --gas-report
 | Base token — mint | [`MintModule.t.sol`](test/MintModule.t.sol) | 13 |
 | Base token — burn | [`BurnModule.t.sol`](test/BurnModule.t.sol) | 15 |
 | Base token — freeze | [`FreezeModule.t.sol`](test/FreezeModule.t.sol) | 21 |
-| Base token — enforcement | [`ERC20EnforcementAdvanced.t.sol`](test/ERC20EnforcementAdvanced.t.sol) | 6 |
-| Base token — pause | [`PauseModule.t.sol`](test/PauseModule.t.sol) | 7 |
-| Base token — access control | [`AccessControlExtended.t.sol`](test/AccessControlExtended.t.sol) | 6 |
+| Base token — enforcement | [`ERC20EnforcementAdvanced.t.sol`](test/ERC20EnforcementAdvanced.t.sol) | 18 |
+| Base token — pause & deactivation | [`PauseModule.t.sol`](test/PauseModule.t.sol) | 11 |
+| Base token — access control | [`AccessControlExtended.t.sol`](test/AccessControlExtended.t.sol) | 11 |
 | Base token — validation reads | [`ValidationModuleReadPath.t.sol`](test/ValidationModuleReadPath.t.sol) | 6 |
-| Base token — rule engine | [`RuleEngineIntegration.t.sol`](test/RuleEngineIntegration.t.sol) | 5 |
+| Base token — rule engine | [`RuleEngineIntegration.t.sol`](test/RuleEngineIntegration.t.sol) | 9 |
 | Base token — extra info & documents | [`ExtraInformationAndDocument.t.sol`](test/ExtraInformationAndDocument.t.sol) | 7 |
-| Base token — cross-chain | [`ERC20CrossChainComprehensive.t.sol`](test/ERC20CrossChainComprehensive.t.sol) | 8 |
+| Base token — cross-chain | [`ERC20CrossChainComprehensive.t.sol`](test/ERC20CrossChainComprehensive.t.sol) | 10 |
 | Base token — meta-tx | [`ERC2771Module.t.sol`](test/ERC2771Module.t.sol) | 4 |
 | Base token — CCIP | [`CCIPModule.t.sol`](test/CCIPModule.t.sol) | 7 |
 | Variant — light | [`LightVariant.t.sol`](test/LightVariant.t.sol) | 9 |
-| Variant — allowlist | [`AllowlistModule.t.sol`](test/AllowlistModule.t.sol) | 17 |
+| Variant — allowlist | [`AllowlistModule.t.sol`](test/AllowlistModule.t.sol) | 18 |
 | Variant — debt | [`DebtModule.t.sol`](test/DebtModule.t.sol) | 8 |
 | Variant — debt engine | [`DebtEngineModule.t.sol`](test/DebtEngineModule.t.sol) | 8 |
 | Variant — ERC-1363 | [`ERC1363Module.t.sol`](test/ERC1363Module.t.sol) | 9 |
 | Variant — ERC-7551 | [`ERC7551Module.t.sol`](test/ERC7551Module.t.sol) | 8 |
-| Variant — UUPS upgrades | [`UUPSUpgrade.t.sol`](test/UUPSUpgrade.t.sol) | 8 |
+| Variant — UUPS upgrades | [`UUPSUpgrade.t.sol`](test/UUPSUpgrade.t.sol) | 10 |
 | Scripts — base standalone | [`DeployCMTATStandalone.t.sol`](test/DeployCMTATStandalone.t.sol) | 6 |
 | Scripts — base proxies | [`DeployCMTATUpgradeableProxy.t.sol`](test/DeployCMTATUpgradeableProxy.t.sol) | 4 |
 | Scripts — light & allowlist | [`DeployCMTATLightAllowlist.t.sol`](test/DeployCMTATLightAllowlist.t.sol) | 6 |
@@ -52,7 +52,7 @@ forge test --gas-report
 | Scripts — ERC-7551 | [`DeployCMTATERC7551Versions.t.sol`](test/DeployCMTATERC7551Versions.t.sol) | 3 |
 | Scripts — env overrides | [`DeployEnvOverrides.t.sol`](test/DeployEnvOverrides.t.sol) | 1 |
 | Fuzz & invariants | [`FuzzInvariant.t.sol`](test/FuzzInvariant.t.sol) | 3 |
-| **Total** | | **230** |
+| **Total** | | **260** |
 
 ---
 
@@ -150,7 +150,7 @@ Address freezing (`setAddressFrozen`) and its batch form.
 | `test_RevertWhen_BatchFreezeEmptyAccounts` | an empty batch reverts |
 | `test_RevertWhen_BatchFreezeArrayLengthMismatch` | mismatched array lengths revert |
 
-### `ERC20EnforcementAdvanced.t.sol` — 6 tests
+### `ERC20EnforcementAdvanced.t.sol` — 18 tests
 
 Partial token freezing and forced transfers (`ERC20ENFORCER_ROLE`).
 
@@ -162,8 +162,20 @@ Partial token freezing and forced transfers (`ERC20ENFORCER_ROLE`).
 | `test_ForcedTransferToZeroBurnsTokens` | a forced transfer to `address(0)` burns |
 | `test_RevertWhen_NonAdminForcedTransfer` | forced transfer is role-gated |
 | `test_RevertWhen_NonERC20EnforcerFreezes` | partial freeze is role-gated |
+| `test_ForcedTransferWorksWhilePaused` | enforcement bypasses the pause while normal transfers stay blocked |
+| `test_ForcedTransferWorksFromAndToFrozenAddress` | enforcement bypasses address freezes on both sides |
+| `test_ForcedTransferReducesRecipientAllowance` | a finite allowance granted to the recipient is reduced by the amount |
+| `test_ForcedTransferZeroesAnAllowanceSmallerThanTheAmount` | an allowance below the amount is zeroed, not underflowed |
+| `test_ForcedTransferLeavesInfiniteAllowanceUntouched` | `type(uint256).max` allowances are left alone |
+| `test_FreezePartialTokensAccumulate` | successive partial freezes add up |
+| `test_RevertWhen_AccumulatedFreezeExceedsBalance` | the cumulative frozen amount cannot exceed the balance |
+| `test_UnfreezePartialTokensReducesTheFrozenAmount` | unfreeze lowers the frozen amount and emits `TokensUnfrozen` |
+| `test_RevertWhen_UnfreezeExceedsFrozenBalance` | unfreezing more than is frozen reverts |
+| `test_SetFrozenTokensOverwritesInBothDirections` | `setFrozenTokens` overwrites and picks the freeze/unfreeze event |
+| `test_RevertWhen_SetFrozenTokensToTheCurrentValue` | setting the current value reverts |
+| `test_FrozenTokensBlockOnlyTheFrozenPartOfATransfer` | the active balance is spendable, the frozen part is not |
 
-### `PauseModule.t.sol` — 7 tests
+### `PauseModule.t.sol` — 11 tests
 
 | Test | Asserts |
 |------|---------|
@@ -174,8 +186,12 @@ Partial token freezing and forced transfers (`ERC20ENFORCER_ROLE`).
 | `test_RevertWhen_NonPauserCallsPause` | pause is role-gated |
 | `test_RevertWhen_DeactivateWithoutPause` | deactivation requires the paused state |
 | `test_DeactivateThenUnpauseRevertsAndReadPathShowsDeactivated` | a deactivated contract cannot be unpaused |
+| `test_DeactivationBlocksMintAndBurn` | mint and burn revert with `EnforcedDeactivation` |
+| `test_DeactivationBlocksTransfers` | transfers stay blocked after deactivation |
+| `test_ForcedTransferStillWorksAfterDeactivation` | enforcement (seize and burn) survives the kill switch |
+| `test_DeactivateIsRoleGatedAndIdempotent` | only the admin may deactivate; a second call is a no-op |
 
-### `AccessControlExtended.t.sol` — 6 tests
+### `AccessControlExtended.t.sol` — 11 tests
 
 | Test | Asserts |
 |------|---------|
@@ -185,6 +201,11 @@ Partial token freezing and forced transfers (`ERC20ENFORCER_ROLE`).
 | `test_ERC20EnforcerRoleRequiredForSetFrozenTokens` | `setFrozenTokens` is role-gated |
 | `test_RoleGates_SnapshotAndDocumentAndExtraInfo` | snapshot / document / extra-info setters are role-gated |
 | `test_RevokedRoleCannotUseProtectedFunction` | revoking a role removes access |
+| `test_DefaultAdminPassesEveryRoleCheckWithoutBeingGrantedThem` | `hasRole` short-circuits for the default admin |
+| `test_RenounceRoleRemovesAccess` | an account can renounce its own role and loses access |
+| `test_RevertWhen_RenouncingARoleForSomeoneElse` | `renounceRole` only works for the caller |
+| `test_RevertWhen_NonAdminGrantsOrRevokesRoles` | granting and revoking need `DEFAULT_ADMIN_ROLE` |
+| `test_DefaultAdminCanBeHandedOverAndTheOldAdminLosesEverything` | after handover the old admin loses every implicit role |
 
 ### `ValidationModuleReadPath.t.sol` — 6 tests
 
@@ -199,7 +220,7 @@ The ERC-1404 read path: `detectTransferRestriction`, `messageForTransferRestrict
 | `test_ReadPath_RuleEngineZeroAndNonZeroTransitions` | read path with and without a rule engine set |
 | `test_ReadPath_UnknownCodeMessageFallback` | unknown codes fall back to a default message |
 
-### `RuleEngineIntegration.t.sol` — 5 tests
+### `RuleEngineIntegration.t.sol` — 9 tests
 
 Uses `MockRuleEngine`.
 
@@ -210,6 +231,10 @@ Uses `MockRuleEngine`.
 | `test_RevertWhen_SetRuleEngineSameValue` | re-setting the same engine reverts |
 | `test_RevertWhen_RuleEngineRejectsTransfer` | a rejecting engine blocks `transfer` |
 | `test_RevertWhen_RuleEngineRejectsTransferFrom` | a rejecting engine blocks `transferFrom` |
+| `test_ReadPathReflectsTheRuleEngineVerdict` | `canTransfer` / `canTransferFrom` mirror the engine's answer |
+| `test_RuleEngineRejectingOnlyInCanTransferDoesNotBlockTheTransfer` | only the `transferred` hook can stop a transfer |
+| `test_ClearingTheRuleEngineRemovesItsRules` | setting the engine to `address(0)` removes its rules |
+| `test_RuleEngineAlsoGovernsMintAndBurn` | the hook runs on mint and burn as well |
 
 ### `ExtraInformationAndDocument.t.sol` — 7 tests
 
@@ -225,7 +250,7 @@ Uses `MockDocumentEngine` and `MockSnapshotEngine`.
 | `test_SnapshooterRoleCanSetSnapshotEngineAndTransferTriggersIt` | transfers notify the snapshot engine |
 | `test_RevertWhen_SetSnapshotEngineSameValue` | re-setting the same snapshot engine reverts |
 
-### `ERC20CrossChainComprehensive.t.sol` — 8 tests
+### `ERC20CrossChainComprehensive.t.sol` — 10 tests
 
 ERC-7802 crosschain mint/burn, `burnFrom` and the interface advertisement.
 
@@ -235,6 +260,8 @@ ERC-7802 crosschain mint/burn, `burnFrom` and the interface advertisement.
 | `test_CrosschainMintAndBurnEmitExpectedEvents` | `CrosschainMint` / `CrosschainBurn` payloads |
 | `test_RevertWhen_NoCrossChainRole` | crosschain calls are role-gated |
 | `test_RevertWhen_CrosschainBurnFromFrozenAddress` | a frozen holder cannot be crosschain-burned |
+| `test_RevertWhen_CrosschainMintToFrozenAddress` | a frozen recipient cannot be crosschain-minted to |
+| `test_CrosschainBurnNeedsNoAllowance` | the bridge role burns without an ERC-20 allowance |
 | `test_RevertWhen_CrosschainBurnWhilePaused` | pause blocks crosschain burn |
 | `test_RevertWhen_BurnSelfWhilePaused` | pause blocks self-burn |
 | `test_BurnFromConsumesAllowanceAndEmitsSpendAndBurnFrom` | `burnFrom` spends allowance and emits `Spend` + `BurnFrom` |
@@ -287,7 +314,7 @@ Each suite deploys its variant through the matching script's `deploy(...)` helpe
 | `test_FreezeIsRoleGated` | `ENFORCER_ROLE` enforced |
 | `test_AdminHoldsEveryRole` | the default admin implicitly holds every role |
 
-### `AllowlistModule.t.sol` — 17 tests
+### `AllowlistModule.t.sol` — 18 tests
 
 `CMTATStandaloneAllowlist`. The allowlist is **enabled by the initializer** and nobody is listed, so
 a fresh token rejects everything until addresses are added.
@@ -310,6 +337,7 @@ a fresh token rejects everything until addresses are added.
 | `test_SetAddressAllowlistEmitsEventWithData` | `AddressAddedToAllowlist` payload |
 | `test_EnableAllowlistEmitsEvent` | `AllowlistEnableStatus` payload |
 | `test_RevertWhen_NonAllowlistRoleManagesAllowlist` | both setters need `ALLOWLIST_ROLE` |
+| `test_ReadPathReflectsTheAllowlist` | `canTransfer` / `canTransferFrom` are false until both parties are listed |
 | `test_AllowlistRoleCanBeGrantedAndUsed` | a granted role holder can manage the list |
 
 ### `DebtModule.t.sol` — 8 tests
@@ -373,7 +401,7 @@ a fresh token rejects everything until addresses are added.
 | `test_ExtraInformationRoleCanBeGrantedAndUsed` | `EXTRA_INFORMATION_ROLE` can be delegated |
 | `test_RevertWhen_NonExtraInformationRoleSetsMetaDataOrTerms` | both setters are role-gated |
 
-### `UUPSUpgrade.t.sol` — 8 tests
+### `UUPSUpgrade.t.sol` — 10 tests
 
 `CMTATUpgradeableUUPS` behind its ERC-1967 proxy.
 
@@ -386,6 +414,8 @@ a fresh token rejects everything until addresses are added.
 | `test_RevertWhen_UnauthorizedAccountUpgrades` | an unauthorized caller cannot, and the slot is unchanged |
 | `test_RevertWhen_RevokedUpgradeRoleTriesToUpgrade` | revoking removes the right |
 | `test_RevertWhen_ProxyIsInitializedTwice` | `InvalidInitialization` on the proxy |
+| `test_RevertWhen_UpgradingToANonUUPSImplementation` | a target without `proxiableUUID` is rejected |
+| `test_RevertWhen_UpgradingToAnAddressWithoutCode` | a codeless target reverts and leaves the slot intact |
 | `test_RevertWhen_ImplementationIsInitializedDirectly` | the implementation is locked by `_disableInitializers()` |
 
 ---

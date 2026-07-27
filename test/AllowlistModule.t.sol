@@ -213,6 +213,17 @@ contract AllowlistModuleTest is Test {
         cmtat.enableAllowlist(false);
     }
 
+    function test_ReadPathReflectsTheAllowlist() public {
+        assertFalse(cmtat.canTransfer(USER1, USER2, 100));
+        assertFalse(cmtat.canTransferFrom(USER3, USER1, USER2, 100));
+
+        _allowlist(USER2, true);
+        _allowlist(USER3, true);
+
+        assertTrue(cmtat.canTransfer(USER1, USER2, 100));
+        assertTrue(cmtat.canTransferFrom(USER3, USER1, USER2, 100));
+    }
+
     function test_AllowlistRoleCanBeGrantedAndUsed() public {
         vm.prank(ADMIN);
         cmtat.grantRole(ALLOWLIST_ROLE, USER3);

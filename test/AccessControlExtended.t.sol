@@ -124,4 +124,86 @@ contract AccessControlExtendedTest is HelperContract {
         );
         cmtat.crosschainMint(USER2, 1);
     }
+
+    // ============ Role Administration Edge Cases ============
+
+    /// @dev `AccessControlModule.hasRole` short-circuits for the default admin, so the admin passes
+    ///      every role check without ever being granted those roles individually.
+    function test_DefaultAdminPassesEveryRoleCheckWithoutBeingGrantedThem() public {
+        assertTrue(cmtat.hasRole(MINTER_ROLE, ADMIN));
+        assertTrue(cmtat.hasRole(CROSS_CHAIN_ROLE, ADMIN));
+        assertTrue(cmtat.hasRole(keccak256("ANY_UNKNOWN_ROLE"), ADMIN));
+
+        // ... and non-admins do not
+        assertFalse(cmtat.hasRole(MINTER_ROLE, USER1));
+    }
+
+    function test_RenounceRoleRemovesAccess() public {
+        vm.prank(ADMIN);
+        cmtat.grantRole(MINTER_ROLE, USER1);
+
+        vm.prank(USER1);
+        cmtat.mint(USER2, 10);
+
+        // only the account itself may renounce
+        vm.prank(USER1);
+        cmtat.renounceRole(MINTER_ROLE, USER1);
+        assertFalse(cmtat.hasRole(MINTER_ROLE, USER1));
+
+        vm.prank(USER1);
+        vm.expectRevert(
+            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, USER1, MINTER_ROLE)
+        );
+        cmtat.mint(USER2, 10);
+    }
+
+    function test_RevertWhen_RenouncingARoleForSomeoneElse() public {
+        vm.prank(ADMIN);
+        cmtat.grantRole(MINTER_ROLE, USER1);
+
+        vm.prank(ADMIN);
+        vm.expectRevert(IAccessControl.AccessControlBadConfirmation.selector);
+        cmtat.renounceRole(MINTER_ROLE, USER1);
+
+        assertTrue(cmtat.hasRole(MINTER_ROLE, USER1));
+    }
+
+    function test_RevertWhen_NonAdminGrantsOrRevokesRoles() public {
+        vm.prank(USER1);
+        vm.expectRevert(
+            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, USER1, DEFAULT_ADMIN_ROLE)
+        );
+        cmtat.grantRole(MINTER_ROLE, USER1);
+
+        vm.prank(ADMIN);
+        cmtat.grantRole(MINTER_ROLE, USER2);
+
+        vm.prank(USER1);
+        vm.expectRevert(
+            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, USER1, DEFAULT_ADMIN_ROLE)
+        );
+        cmtat.revokeRole(MINTER_ROLE, USER2);
+    }
+
+    /// @dev The admin role can be handed over, and the old admin then loses its implicit powers —
+    ///      renouncing it without a successor would leave the token unmanageable.
+    function test_DefaultAdminCanBeHandedOverAndTheOldAdminLosesEverything() public {
+        vm.startPrank(ADMIN);
+        cmtat.grantRole(DEFAULT_ADMIN_ROLE, USER1);
+        cmtat.renounceRole(DEFAULT_ADMIN_ROLE, ADMIN);
+        vm.stopPrank();
+
+        assertTrue(cmtat.hasRole(DEFAULT_ADMIN_ROLE, USER1));
+        assertFalse(cmtat.hasRole(DEFAULT_ADMIN_ROLE, ADMIN));
+        assertFalse(cmtat.hasRole(MINTER_ROLE, ADMIN));
+
+        vm.prank(ADMIN);
+        vm.expectRevert(
+            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, ADMIN, MINTER_ROLE)
+        );
+        cmtat.mint(USER2, 1);
+
+        vm.prank(USER1);
+        cmtat.mint(USER2, 1);
+    }
 }

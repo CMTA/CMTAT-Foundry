@@ -113,6 +113,32 @@ contract UUPSUpgradeTest is Test {
         cmtat.upgradeToAndCall(newImplementation, "");
     }
 
+    /// @dev The UUPS check happens on the *new* implementation: a contract without `proxiableUUID`
+    ///      is rejected, which is what stops an upgrade from bricking the proxy.
+    function test_RevertWhen_UpgradingToANonUUPSImplementation() public {
+        address notAnImplementation = address(new NotUUPS());
+        address before = _implementation();
+
+        vm.prank(ADMIN);
+        vm.expectRevert(abi.encodeWithSelector(ERC1967Utils.ERC1967InvalidImplementation.selector, notAnImplementation));
+        cmtat.upgradeToAndCall(notAnImplementation, "");
+
+        assertEq(_implementation(), before);
+    }
+
+    /// @dev An address without code fails earlier than the UUPS check — the `proxiableUUID` call
+    ///      hits the compiler's extcodesize guard and reverts with no data at all.
+    function test_RevertWhen_UpgradingToAnAddressWithoutCode() public {
+        address eoa = address(0xBEEF);
+        address before = _implementation();
+
+        vm.prank(ADMIN);
+        vm.expectRevert();
+        cmtat.upgradeToAndCall(eoa, "");
+
+        assertEq(_implementation(), before);
+    }
+
     function test_RevertWhen_ProxyIsInitializedTwice() public {
         ICMTATInitializerUUPS initializer = ICMTATInitializerUUPS(address(cmtat));
 
@@ -145,4 +171,9 @@ contract UUPSUpgradeTest is Test {
             ICMTATConstructor.Engine({ruleEngine: IRuleEngine(address(0))})
         );
     }
+}
+
+/// @dev A plain contract: no `proxiableUUID`, so it must be rejected as an upgrade target.
+contract NotUUPS {
+    uint256 public value;
 }

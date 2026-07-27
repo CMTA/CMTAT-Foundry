@@ -57,4 +57,59 @@ contract RuleEngineIntegrationTest is HelperContract {
         vm.expectRevert(MockRuleEngine.MockRuleEngine_TransferRejected.selector);
         cmtat.transferFrom(USER1, USER3, 100);
     }
+
+    function test_ReadPathReflectsTheRuleEngineVerdict() public {
+        assertTrue(cmtat.canTransfer(USER1, USER2, 100));
+        assertTrue(cmtat.canTransferFrom(USER3, USER1, USER2, 100));
+
+        mockRuleEngine.setAllowCanTransfer(false);
+        mockRuleEngine.setAllowCanTransferFrom(false);
+
+        assertFalse(cmtat.canTransfer(USER1, USER2, 100));
+        assertFalse(cmtat.canTransferFrom(USER3, USER1, USER2, 100));
+    }
+
+    /// @dev Only the `transferred` hook can stop a transfer: `canTransfer` is a read-only opinion,
+    ///      so a rule engine that merely returns false there does **not** block the write path.
+    ///      Engines must revert in `transferred` to enforce a rule.
+    function test_RuleEngineRejectingOnlyInCanTransferDoesNotBlockTheTransfer() public {
+        mockRuleEngine.setAllowCanTransfer(false);
+        assertFalse(cmtat.canTransfer(USER1, USER2, 100));
+
+        vm.prank(USER1);
+        cmtat.transfer(USER2, 100);
+        assertEq(cmtat.balanceOf(USER2), 100);
+    }
+
+    function test_ClearingTheRuleEngineRemovesItsRules() public {
+        mockRuleEngine.setRevertOnTransferred(true);
+
+        vm.prank(ADMIN);
+        cmtat.setRuleEngine(IRuleEngine(ZERO_ADDRESS));
+        assertEq(address(cmtat.ruleEngine()), ZERO_ADDRESS);
+
+        vm.prank(USER1);
+        cmtat.transfer(USER2, 100);
+        assertEq(cmtat.balanceOf(USER2), 100);
+    }
+
+    /// @dev The engine's `transferred` hook also runs on mint and burn, so a rejecting engine
+    ///      stops issuance and redemption too — not only holder-to-holder transfers.
+    function test_RuleEngineAlsoGovernsMintAndBurn() public {
+        vm.prank(ADMIN);
+        cmtat.mint(USER2, 50);
+        assertEq(cmtat.balanceOf(USER2), 50);
+
+        mockRuleEngine.setRevertOnTransferred(true);
+
+        vm.prank(ADMIN);
+        vm.expectRevert(MockRuleEngine.MockRuleEngine_TransferRejected.selector);
+        cmtat.mint(USER2, 50);
+
+        vm.prank(ADMIN);
+        vm.expectRevert(MockRuleEngine.MockRuleEngine_TransferRejected.selector);
+        cmtat.burn(USER2, 20, "");
+
+        assertEq(cmtat.balanceOf(USER2), 50);
+    }
 }
