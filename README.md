@@ -14,7 +14,8 @@ Which CMTAT version each release of this repository is built and tested against:
 
 | CMTAT-Foundry | CMTAT | Status |
 |---------------|-------|--------|
-| v0.2.0 | [v3.2.0](https://github.com/CMTA/CMTAT/releases/tag/v3.2.0) | current |
+| v0.3.0 | [v3.2.0](https://github.com/CMTA/CMTAT/releases/tag/v3.2.0) | current |
+| v0.2.0 | [v3.2.0-rc0](https://github.com/CMTA/CMTAT/releases/tag/v3.2.0-rc0) | previous |
 | v0.1.0 | [v2.3.0](https://github.com/CMTA/CMTAT/releases/tag/v2.3.0) | previous |
 
 The CMTAT version is pinned by the `lib/CMTAT` submodule (see `foundry.lock`); see the
