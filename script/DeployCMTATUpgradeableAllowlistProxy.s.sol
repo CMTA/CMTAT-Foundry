@@ -1,11 +1,10 @@
 //SPDX-License-Identifier: MPL-2.0
 pragma solidity ^0.8.20;
 
-import "forge-std/Script.sol";
+import "./CMTATDeployScriptBase.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "CMTAT/deployment/allowlist/CMTATUpgradeableAllowlist.sol";
 import "CMTAT/interfaces/technical/ICMTATConstructor.sol";
-import "CMTAT/interfaces/tokenization/draft-IERC1643CMTAT.sol";
 
 interface ICMTATAllowlistInitializer {
     function initialize(
@@ -15,29 +14,14 @@ interface ICMTATAllowlistInitializer {
     ) external;
 }
 
-contract DeployCMTATUpgradeableAllowlistProxy is Script {
-    string public constant DEFAULT_NAME = "CMTA Token";
-    string public constant DEFAULT_SYMBOL = "CMTAT";
-    uint8 public constant DEFAULT_DECIMALS = 0;
-    string public constant DEFAULT_TOKEN_ID = "CMTAT_ISIN";
-    string public constant DEFAULT_TERMS_NAME = "Terms";
-    string public constant DEFAULT_TERMS_URI = "https://cmta.ch/terms";
-    string public constant DEFAULT_INFO = "CMTAT_info";
+contract DeployCMTATUpgradeableAllowlistProxy is CMTATDeployScriptBase {
 
     function run() external returns (CMTATUpgradeableAllowlist) {
-        address admin = vm.envOr("ADMIN_ADDRESS", msg.sender);
-        address forwarder = vm.envOr("FORWARDER_ADDRESS", address(0));
-        string memory name = vm.envOr("TOKEN_NAME", DEFAULT_NAME);
-        string memory symbol = vm.envOr("TOKEN_SYMBOL", DEFAULT_SYMBOL);
-        uint8 decimals = uint8(vm.envOr("TOKEN_DECIMALS", uint256(DEFAULT_DECIMALS)));
-        string memory tokenId = vm.envOr("TOKEN_ID", DEFAULT_TOKEN_ID);
-        string memory termsName = vm.envOr("TERMS_NAME", DEFAULT_TERMS_NAME);
-        string memory termsUri = vm.envOr("TERMS_URI", DEFAULT_TERMS_URI);
-        string memory info = vm.envOr("TOKEN_INFO", DEFAULT_INFO);
+        ExtendedParams memory p = _readExtendedParams(true);
 
         vm.startBroadcast();
         CMTATUpgradeableAllowlist cmtat =
-            deploy(admin, forwarder, name, symbol, decimals, tokenId, termsName, termsUri, info);
+            deploy(p.admin, p.forwarder, p.name, p.symbol, p.decimals, p.tokenId, p.termsName, p.termsUri, p.info);
         vm.stopBroadcast();
         return cmtat;
     }
@@ -54,18 +38,9 @@ contract DeployCMTATUpgradeableAllowlistProxy is Script {
         string memory info
     ) public returns (CMTATUpgradeableAllowlist) {
         CMTATUpgradeableAllowlist implementation = new CMTATUpgradeableAllowlist(forwarder);
-        ICMTATConstructor.ERC20Attributes memory erc20Attributes = ICMTATConstructor.ERC20Attributes({
-            name: name,
-            symbol: symbol,
-            decimalsIrrevocable: decimals
-        });
-        IERC1643CMTAT.DocumentInfo memory termsDoc = IERC1643CMTAT.DocumentInfo({
-            name: termsName,
-            uri: termsUri,
-            documentHash: bytes32(0)
-        });
-        ICMTATConstructor.ExtraInformationAttributes memory extraInfoAttributes = ICMTATConstructor
-            .ExtraInformationAttributes({tokenId: tokenId, terms: termsDoc, information: info});
+        ICMTATConstructor.ERC20Attributes memory erc20Attributes = _buildERC20Attributes(name, symbol, decimals);
+        ICMTATConstructor.ExtraInformationAttributes memory extraInfoAttributes =
+            _buildExtraInformationAttributes(tokenId, termsName, termsUri, info);
         bytes memory initData = abi.encodeCall(
             ICMTATAllowlistInitializer.initialize, (admin, erc20Attributes, extraInfoAttributes)
         );

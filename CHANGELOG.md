@@ -33,6 +33,8 @@ Reference: [keepachangelog.com/en/1.1.0/](https://keepachangelog.com/en/1.1.0/)
 
 ## 0.1.0 - 2025-08-28 Initial Foundry Setup
 
+Commit: `c89d23a738fb7fd7ad44aedd3fa9dfa4faea5f21`
+
 ### Added
 
 - Initial Foundry configuration

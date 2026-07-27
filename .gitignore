@@ -2,3 +2,4 @@ lib
 out
 cache/
 node_modules
+.codex

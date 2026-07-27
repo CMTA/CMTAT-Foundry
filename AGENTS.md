@@ -47,7 +47,12 @@ The token contracts themselves are **not** in this repo — they come from the `
   (`forwarderIrrevocable`), never an initializer argument, including on upgradeable variants.
 - **Test convention.** Tests inherit `test/HelperContract.sol` (fixed `ADMIN`/`USER1..3` addresses,
   role hashes, token constants, `_deployToken()`). Deploy tests instantiate the script contract and
-  call `.run()` or `.deploy(...)` directly, driving env vars with `vm.setEnv`.
+  call `.deploy(...)` with explicit arguments.
+- ⚠️ **`vm.setEnv` lives in exactly one test function.** It mutates the environment of the whole
+  forge process, and forge runs test *cases* in parallel — two tests setting `TOKEN_NAME` race and
+  fail non-deterministically. All env-driven `run()` coverage therefore sits in the single
+  `test_Run_ScriptsUseEnvironmentOverrides()` of `test/DeployEnvOverrides.t.sol`. Never call
+  `vm.setEnv` (or `script.run()`) from another test; add a section to that function instead.
 
 ## File tree
 
@@ -91,7 +96,7 @@ test/
 ├── DeployCMTATDebtVersions.t.sol             # debt & debtEngine scripts
 ├── DeployCMTATERC1363Versions.t.sol          # ERC-1363 scripts
 ├── DeployCMTATERC7551Versions.t.sol          # ERC-7551 scripts
-├── DeployAdditionalScriptsRun.t.sol          # run() + env-var coverage for all variants
+├── DeployEnvOverrides.t.sol                  # ONLY place allowed to call vm.setEnv (see Key concepts)
 ├── MockRuleEngine.sol                        # mocks used by the suites
 ├── MockDocumentEngine.sol
 ├── MockSnapshotEngine.sol
@@ -146,8 +151,8 @@ Local deployment: run `anvil`, then
 - **Naming.** Scripts `DeployCMTAT<Variant>.s.sol` / `DeployCMTAT<Variant>Proxy.s.sol`; tests
   `<Subject>.t.sol`; test functions `test_<Behaviour>`, fuzz `testFuzz_<Behaviour>`; mocks `Mock*.sol`.
 - **New variant checklist:** add the script (inheriting `CMTATDeployScriptBase`), add or extend the
-  matching `test/Deploy*.t.sol`, cover the `run()` + env-var path in `DeployAdditionalScriptsRun.t.sol`,
-  assert the zero-admin revert, and update `CHANGELOG.md`.
+  matching `test/Deploy*.t.sol` using `deploy(...)`, add a section to the single env test in
+  `test/DeployEnvOverrides.t.sol`, assert the zero-admin revert, and update `CHANGELOG.md`.
 - **Keep scripts DRY** — put anything shared by two or more scripts into `CMTATDeployScriptBase.sol`.
 - **`forge fmt` before committing**, and make sure `forge build` and `forge test` are green.
 - **Versioning** follows keep-a-changelog + semver in `CHANGELOG.md`.
