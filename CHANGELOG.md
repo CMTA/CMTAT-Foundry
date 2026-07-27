@@ -13,7 +13,13 @@ All notable changes to this project will be documented in this file.
 
 Reference: [keepachangelog.com/en/1.1.0/](https://keepachangelog.com/en/1.1.0/)
 
+
+
+## v0.3.0
+
 ## v0.2.0
+
+Commit: `c0a3043cef0d51bb1f5745bd5e3b297337af487a`
 
 ### Added
 
